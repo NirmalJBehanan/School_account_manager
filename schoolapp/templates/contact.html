@@ -1,0 +1,71 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<header id="header" class="ex-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="white">Contact Us</h1>
+            </div> 
+        </div> 
+    </div> 
+</header>
+
+<!-- Contact Us Section -->
+<section class="contact-section text-center">
+    <div class="container mt-5 ">
+        <h4 class="">Please feel free to contact us on the details below</h4>
+        
+        <!-- Contact Information -->
+        <div class="row contact-info mb-5 mt-5">
+            <div class="col-md-4">
+                <i class="bi bi-house-door"></i>
+                <h4>Address</h4>
+                <p>123 School Lane, Education City, EC 45678</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-envelope"></i>
+                <h4>Email</h4>
+                <p>contact@xyschool.edu</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-telephone"></i>
+                <h4>Phone</h4>
+                <p>+1 (555) 123-4567</p>
+            </div>
+        </div>
+        
+        <!-- Google Map -->
+        <div class="map mb-5">
+            <h4>Find Us Here</h4>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.101211049614!2d-122.39974098468192!3d37.79067997975835!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085808ef3fbe917%3A0x8cb7d89d7d73a299!2s123%20School%20Lane%2C%20Education%20City%2C%20CA%2045678!5e0!3m2!1sen!2sus!4v1600305817065!5m2!1sen!2sus" 
+                width="100%" 
+                height="300" 
+                style="border:0;" 
+                allowfullscreen="" 
+                ></iframe>
+        </div>
+        
+        <!-- Social Media Links -->
+        <div class="social-media mb-5">
+            <h4>Follow Us</h4>
+            <a href="" class="btn btn-primary m-2" role="button">
+                <i class="bi bi-facebook"></i> Facebook
+            </a>
+            <a href="" class="btn btn-info m-2" role="button">
+                <i class="bi bi-twitter"></i> Twitter
+            </a>
+            <a href="" class="btn btn-danger m-2" role="button">
+                <i class="bi bi-instagram"></i> Instagram
+            </a>
+        </div>
+        
+       
+    </div>
+</section>
+
+
+{% endblock content %}

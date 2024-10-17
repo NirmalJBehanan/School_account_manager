@@ -1,0 +1,84 @@
+{% extends 'accountant/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Salary Transactions</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Salary Transactions</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            {% if data %}
+            <div class="card">
+                <h5 class="card-header">Salary Transactions</h5>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th colspan="2">Staff</th>
+                            <th>Academic Year</th>
+                            <th>Salary</th>
+                            <th>Salary date</th>
+                            <th>Status</th>
+                            <th colspan="2">#</th>
+                        </tr>
+                          </thead>
+                          <tbody>
+                            {% for i in data %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td><img src="{{i.staff.image}}" class="rounded" style="height: 60px; width:60px;" alt=""></td>
+                                <td>
+                                    {{i.staff.name}} <br>
+                                    Email : {{i.staff.email}} <br>
+                                    Contact number : {{i.staff.contact_number}}
+                                </td>
+                                <td>{{ i.academic_year.academic_year }}</td>
+                                <td>{{i.basic_pay}}</td>
+                                <td>{{ i.salary_date }} </td>
+                                <td>
+                                    {% if i.approval_status == None %}
+                                        <div class="badge badge-warning">Sended to admin</div>
+                                    {% elif i.approval_status == 'Approved' %}
+                                        <div class="badge badge-success">Transaction {{i.status}}</div>
+                                    {% else %}
+                                        <div class="badge badge-danger">Transaction {{i.status}}</div>
+                                    {% endif %} 
+                                </td>
+                                <td>
+                                    <a href="{% url 'salary_details' %}?st_id={{ i.st_id }}" class="btn btn-xs btn-primary">Salary Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <h4>Not found any list</h4>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+
+{% endblock content %}
+

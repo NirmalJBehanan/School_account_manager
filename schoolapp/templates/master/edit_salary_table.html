@@ -1,0 +1,128 @@
+{% extends 'master/header.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Salary table</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Salary table</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        <div class="col-xl-5 col-lg-5 col-md-12 col-sm-12 col-12">
+            {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %} 
+            <div class="card">
+                <h5 class="card-header">Salary table</h5>
+                <div class="card-body">
+                    <form action="{% url 'edit_salary_table' %}" method="post" id="myform">
+                        {% csrf_token %}
+                        <div class="row">
+                            <input type="hidden" name="st_id" value="{{data.st_id}}">
+                            <div class="form-group col-12">
+                                <label for="type">Account category</label>
+                                <select name="account_category" required="" class="form-control form-control-sm">
+                                    <option value="">--Select--</option>
+                                    <option {% if data.account_category == 'Income' %} selected {% endif %} value="Income">Income</option>
+                                    <option {% if data.account_category == 'Expense' %} selected {% endif %} value="Expense">Expense</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-12">
+                                <label for="type">Designation</label>
+                                <select name="designation_id" required="" class="form-control form-control-sm">
+                                    <option value="">--Select--</option>
+                                    {% if des %} 
+                                      {% for i in des %}
+                                      <option {% if i.d_id == data.designation_id %} selected {% endif %} value="{{i.d_id}}">{{i.designation_name}}</option>
+                                      {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-12">
+                                <label for="type">Basic pay</label>
+                                <input type="text" name="basic_pay" value="{{data.basic_pay}}" required="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12 pl-0">
+                                <p class="text-right">
+                                    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>    
+    </div>
+</div>
+  
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+        level: {
+                        required: true,
+                    },
+
+               
+              },
+              messages: {
+
+                password: "Please Enter Valid Password Name(8-15 digit alphanumeric  password  and must include @#*!%^& special character,any Number",
+                cpas: "Please Enter Valid Password Name(5-15 digit alphanumeric confirm password and same as above password and @#* also allowed",
+                
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+{% endblock content %}
+

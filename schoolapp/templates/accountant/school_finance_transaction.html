@@ -1,0 +1,248 @@
+{% extends 'accountant/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">School Finance Transaction</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">School Finance Transaction</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        <div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12 m-auto">
+            {% if messages %}
+                {% for message in messages %}
+                    <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+            <div class="card">
+                <h5 class="card-header">School Finance Transaction</h5>
+                <div class="card-body">
+                    <form action="{% url 'school_finance_transaction' %}" method="post" enctype="multipart/form-data" id="myform">
+                        {% csrf_token %}
+                        <div class="row">
+                           
+                            <div class="form-group col-4">
+                                <label for="academic_year_id">Acadamic year</label>
+                                <select class="form-control form-control-sm" required name="academic_year_id" id="academic_year_id">
+                                    <option value="">--Select--</option>
+                                    {% if ay %} 
+                                    {% for i in ay %}
+                                    <option value="{{i.ay_id}}">{{i.academic_year}}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="school_finance_id">Finance type</label>
+                                <select class="form-control form-control-sm" required name="school_finance_id" id="academic_year_id">
+                                    <option value="">--Select--</option>
+                                    {% if data %} 
+                                    {% for i in data %}
+                                    <option value="{{i.sf_id}}">{{i.finance_type}}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="">Amount</label>
+                                <input type="text" name="total_amount" class="form-control" id="total_amount" required>
+                            </div>
+                            <div class="form-group col-12">
+                                <label for="">Description</label>
+                                <textarea name="description" class="form-control" id="description" required></textarea>
+                            </div>
+                            <div class="form-group col-12">
+                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    $(function(){
+        // Get the value of the date input field
+        var vl = $('#salary_date').val();
+
+        // If there is a value in the input field, use that date
+        if (vl) {
+            var dtToday = new Date(vl);  // Convert to a date object
+        } else {
+            var dtToday = new Date();  // Fallback to today's date if no value
+        }
+
+        var year = dtToday.getFullYear();
+        var month = dtToday.getMonth() + 1;  // Get the current month (0-indexed, so add 1)
+        
+        // Get the first day of the next month, then subtract 1 day to get the last day of the current month
+        var nextMonth = new Date(year, month, 1);  // First day of next month
+        var lastDayOfMonth = new Date(nextMonth - 1);  // Last day of the current month
+        
+        var day = lastDayOfMonth.getDate();  // Get the last day number
+        
+        // Ensure two digits for month and day
+        if (month < 10) month = '0' + month;
+        if (day < 10) day = '0' + day;
+        
+        // Format maxDate as YYYY-MM-DD
+        var maxDate = year + '-' + month + '-' + day;
+
+        // Set the max attribute of the input field
+        $('#salary_date').attr('max', maxDate);
+        $('#salary_date').val(maxDate);
+    });
+</script>
+
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+      name: {
+                      required: true,
+                      regex : /^[A-Za-z ]+$/,
+                      minlength: 3,
+        
+                    },
+                   
+                    contact_number: {
+                        required: true,
+                        digits:true,
+                           minlength: 10,
+                           maxlength: 10,
+                           regex : /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/
+                    },
+
+                   
+        
+                    email: {
+                     required: true,
+                     regex :  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+        
+                    },
+                    
+                
+                    image: {
+                    required: true,
+                    extension:'jpg|jpeg|png'
+                },
+                username: {
+                        required: true,
+                        regex : /^[A-Za-z0-9@]+$/,
+                        minlength: 5,
+                        maxlength: 15,
+        
+                    },
+                    password: {
+                        required: true,
+                         regex : /^[A-Za-z0-9@#*]+$/,
+                         minlength: 5,
+                        maxlength: 15,
+        
+                    },
+                    cpas: {
+                        required: true,
+                           regex : /^[A-Za-z0-9@#*]+$/,
+                           minlength: 5,
+                          maxlength: 15,
+                      equalTo: "#password"
+        
+                    },
+                
+              },
+              messages: {
+    
+                contact_number: "Please Enter Valid 10 digit Phone Number - Starting from 6, 7 or 8 or 9",
+                image : "Please enter a value with a valid extension. jpg|jpeg|png",
+                username: "Please Enter Valid User Name(5-15 digit alphanumeric username",
+                password: "Please Enter Valid Password Name(5-15 digit alphanumeric  password  and @#* also allowed",
+                cpas: "Please Enter Valid Password Name(5-15 digit alphanumeric confirm password and same as above password and @#* also allowed",
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+<script>
+    $("#username").keyup(function () {
+        $('#uname').val("");
+       var username = $(this).val();
+       var count = username.length;
+       $('#cb').html("");
+       if(count>4)
+      {
+       $.ajax({
+             url: '/check_username/',
+             data: {
+                 'username': username
+             },
+             dataType: 'json',
+             success: function (data) {
+                  if (data.username_exists) {
+    
+    
+                    $('#cb').css('color','red');
+                    $('#cb').html(data.error);
+    
+                  }
+                  else{
+    
+                    $('#cb').css('color','green');
+                $('#cb').html(data.success);
+                $('#uname').val(1);
+                  }
+             }
+       });
+    }
+    });
+    </script>
+{% endblock content %}
+

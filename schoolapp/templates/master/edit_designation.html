@@ -1,0 +1,130 @@
+{% extends 'master/header.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Edit designation</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/home" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit designation</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        <div class="col-xl-5 col-lg-5 col-md-12 col-sm-12 col-12">
+            {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %} 
+            <div class="card">
+                <h5 class="card-header">Edit designation</h5>
+                <div class="card-body">
+                    <form action="{% url 'edit_designation' %}" method="post" id="myform">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group col-12">
+                                <input type="hidden" value="{{data.d_id}}" name="d_id">
+                                <label for="type">Designation</label>
+                                <input type="text" name="designation_name" value="{{data.designation_name}}" id="designation_name" required="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12 pl-0">
+                                <p class="text-right">
+                                    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+  
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+        designation_name: {
+                        required: true,
+                        remote: {
+                            url: '/check_value_exist/',
+                            type: 'GET',
+                            data: {
+                                chval: function () {
+                                    return $("#designation_name").val();
+                                },
+                                'tbl' : 'Designation', 
+                                'fil': 'designation_name'
+                            },
+                            dataFilter: function (data) {
+                                var json = JSON.parse(data);
+                                if (json.exists) {
+                                    return false; // Return false if the year exists
+                                } else {
+                                    return true; // Return true if the year is unique
+                                }
+                            }
+                        }
+                    },
+               
+               
+              },
+              messages: {
+                designation_name: {
+                        required: "Designation is required.",
+                        remote: "Designation already exists."
+                    },
+                days: "Please Enter Number of days",
+                
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+{% endblock content %}
+
