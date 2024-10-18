@@ -228,8 +228,8 @@ def staff_register(request):
             return redirect('/staff_register/')
         except Exception:
             password = generate_password()
-            email_sender="nirmaljbehanan2025@mca.ajce.in"    
-            email_password=settings.EMAIL_PASSWORD 
+            email_sender="nirmalbehanan03@gmail.com"    
+            email_password="EMAIL_PASSWORD"
             email_receiver=request.POST['email']
             subject="School accounts management-password"
             
