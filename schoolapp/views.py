@@ -821,7 +821,7 @@ def check_email(request):
 
 def master_reg(request):
     if request.method == 'POST':
-        ob = Login()
+        ob = Login() 
         ob.username = request.POST['username']
         ob.password =  request.POST['password']
         ob.user_type = 'admin'
