@@ -195,7 +195,7 @@ def edit_designation(request):
             ob = Designation.objects.get(d_id=request.POST['d_id'])
             ob.designation_name = request.POST['designation_name']
             ob.save()
-            messages.success(request, 'Updated successfully.')
+            messages.success(request, 'Updated successfully')
             return redirect('/designation/')
         elif 'd_id' in request.GET:
             data = Designation.objects.get(d_id=request.GET['d_id'])
