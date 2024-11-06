@@ -1,0 +1,104 @@
+{% extends 'office_staff/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Salary Transaction details</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Salary Transaction details</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h5 class="card-header">Salary Transaction details</h5>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-7">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>BASIC PAY</th>
+                                    <td>{{ data.basic_pay }}</td>
+                                </tr>
+                                <tr>
+                                    <th>BONUS</th>
+                                    <td>{{ data.bonus }}</td>
+                                </tr>
+                                <tr>
+                                    <th>DA</th>
+                                    <td>{{ data.da_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>TA</th>
+                                    <td>{{ data.ta_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>HRA</th>
+                                    <td>{{ data.hra_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>AGP</th>
+                                    <td>{{ data.agp_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>TOTAL</th>
+                                    <th>{{ data.total_salary }}</th>
+                                </tr>
+                                <tr>
+                                    <th>DEDUCION</th>
+                                    <td>{{ data.deductions }}</td>
+                                </tr>
+                                <tr>
+                                    <th>PAYABLE</th>
+                                    <th class="h6">{{ data.payable }}</th>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-5">
+                            <table class="table table-bordered mb-4">
+                                <tr>
+                                    <td>Academic year : {{ data.academic_year.academic_year }}</td>
+                                    <td>Salary date : {{ data.salary_date }}</td>
+                                </tr>
+                            </table>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td rowspan="3" class="text-center"><img src="{{data.staff.image}}" class="rounded" style="height: 90px; width:90px;" alt=""></td>
+                                    <td>{{data.staff.name}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Contact number : {{data.staff.contact_number}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Email : {{data.staff.login.username}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">{{data.staff.designation.designation_name}}</td>
+                                    <td>Address : {{data.staff.address}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+

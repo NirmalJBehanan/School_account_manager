@@ -1,0 +1,82 @@
+{% extends 'office_staff/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Student list</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Student list</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            {% if data %}
+            <div class="card">
+                <h5 class="card-header">Student list</h5>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Contact details</th>
+                            <th>Standard</th>
+                            <th>Status</th>
+                        </tr>
+                          </thead>
+                          <tbody>
+                            {% for i in data %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td><img src="{{i.image}}" class="rounded" style="height: 60px; width:60px;" alt=""></td>
+                                <td>{{i.name}}</td>
+                                <td>
+                                    Email : {{i.login.username}} <br>
+                                    Contact number : {{i.contact_number}} <br>
+                                    Address : {{i.address}}
+                                </td>
+                                <td>
+                                    EL - {{ i.standard.educational_level.level }} <br>
+                                    STD - {{ i.standard.standard }}
+                                </td>
+                                <td>
+                                    
+                                    {% if i.login.status == True %}
+                                        <a href="{% url 'student_status' %}?login_id={{i.login_id}}&status=0" class="btn btn-danger btn-xs">Dinial Access</a>
+                                    {% else %}
+                                        <a href="{% url 'student_status' %}?login_id={{i.login_id}}&status=1" class="btn btn-success btn-xs">Allow Access</a>
+                                    {% endif %}
+                                        
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <h4>Not found any list</h4>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+
+{% endblock content %}
+

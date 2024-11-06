@@ -1,0 +1,221 @@
+{% extends 'office_staff/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Register Student</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/home" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Register Student</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        <div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12 m-auto">
+            {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+            <div class="card">
+                <h5 class="card-header">Register Student</h5>
+                <div class="card-body">
+                    <form action="/student_register/" method="post" enctype="multipart/form-data" id="myform">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label for="designation_id">Standard</label>
+                                <select class="form-control form-control-sm" required name="standard_id" id="standard_id">
+                                    <option value="">--Select--</option>
+                                    {% if standard %} 
+                                      {% for i in standard %}
+                                      <option value="{{i.s_id}}">{{i.standard}}</option>
+                                      {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="">Full Name</label>
+                                <input type="text" name="name" class="form-control" id="name" required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" id="email">
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="Contact" class="form-label">Contact number</label>
+                                <input type="text" class="form-control" name="contact_number" required>
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="address" class="form-label">Address</label>
+                                <textarea class="form-control" name="address" rows="2" required></textarea>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="image" class="form-label">Image</label>
+                                <input type="file" class="form-control bg-white" name="image" id="image">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="gender" class="form-label">Gender</label><br>
+                                <input type="checkbox" value="male"  name="gender" id="gender"> Male
+                                <input type="checkbox" value="Female"  name="gender" id="gender"> Female
+                            </div>
+                            <div class="col-md-4">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" name="username" id="username">
+                                <span id="cb" name="cb"></span>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" name="password" id="password">
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="cpas" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="cpas" name="cpas">
+                            </div>
+                            <div class="form-group col-12">
+                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+                name: {
+                      required: true,
+                      regex : /^[A-Za-z ]+$/,
+                      minlength: 3,
+        
+                    },
+                   
+                    contact_number: {
+                        required: true,
+                        digits:true,
+                           minlength: 10,
+                           maxlength: 10,
+                           regex : /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/
+                    },
+
+                    address: {
+                        required: true,
+                      minlength: 3,
+        
+                    },
+        
+                    email: {
+                     regex :  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+                    },
+                    gender: {
+                        required: true,
+                    },
+                    image: {
+                    extension:'jpg|jpeg|png'
+                        },
+                username: {
+                        required: true,
+                        regex : /^[0-9]{5}$/,
+                        minlength: 5,
+                        maxlength: 5,
+                        remote: {
+                            url: '/check_username/',
+                            type: 'GET',
+                            data: {
+                                username: function () {
+                                    return $("#username").val();
+                                },
+                                
+                            },
+                            dataFilter: function (data) {
+                                var json = JSON.parse(data);
+                                if (json.exists) {
+                                    return false; // Return false if the year exists
+                                } else {
+                                    return true; // Return true if the year is unique
+                                }
+                            }
+                        }
+        
+                    },
+                    password: {
+                        required: true,
+                         regex : /^[A-Za-z0-9@#*]+$/,
+                         minlength: 5,
+                        maxlength: 15,
+        
+                    },
+                    cpas: {
+                        required: true,
+                           regex : /^[A-Za-z0-9@#*]+$/,
+                           minlength: 5,
+                          maxlength: 15,
+                      equalTo: "#password"
+        
+                    },
+                
+              },
+              messages: {
+    
+                contact_number: "Please Enter Valid 10 digit Phone Number - Starting from 6, 7 or 8 or 9",
+                image : "Please enter a value with a valid extension. jpg|jpeg|png",
+                username: {
+                    regex : "Please Enter Valid 5 digit Username",
+                    remote : "Username already exist"
+                },
+                password: "Please Enter Valid Password Name(5-15 digit alphanumeric  password  and @#* also allowed",
+                cpas: "Please Enter Valid Password Name(5-15 digit alphanumeric confirm password and same as above password and @#* also allowed",
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+
+{% endblock content %}
+

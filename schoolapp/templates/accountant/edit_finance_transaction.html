@@ -1,0 +1,80 @@
+{% extends 'accountant/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">School Finance Transaction</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">School Finance Transaction</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        <div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12 m-auto">
+            {% if messages %}
+                {% for message in messages %}
+                    <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+            <div class="card">
+                <h5 class="card-header">School Finance Transaction</h5>
+                <div class="card-body">
+                    <form action="{% url 'edit_finance_transaction' %}" method="post" enctype="multipart/form-data" id="myform">
+                        {% csrf_token %}
+                        <div class="row">
+                            <input type="hidden" name="sft_id" value="{{ data.sft_id }}">
+                            <div class="form-group col-4">
+                                <label for="academic_year_id">Acadamic year</label>
+                                <select class="form-control form-control-sm" required name="academic_year_id" id="academic_year_id">
+                                    <option value="">--Select--</option>
+                                    {% if ay %} 
+                                    {% for i in ay %}
+                                    <option value="{{i.ay_id}}" {% if data.academic_year_id == i.ay_id %} selected {% endif %}>{{i.academic_year}}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="school_finance_id">Finance type</label>
+                                <select class="form-control form-control-sm" required name="school_finance_id" id="academic_year_id">
+                                    <option value="">--Select--</option>
+                                    {% if sf %} 
+                                    {% for i in sf %}
+                                    <option value="{{i.sf_id}}" {% if data.school_finance_id == i.sf_id %} selected {% endif %}>{{i.finance_type}}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="">Amount</label>
+                                <input type="text" name="total_amount" value="{{ data.total_amount }}" class="form-control" id="total_amount" required>
+                            </div>
+                            <div class="form-group col-12">
+                                <label for="">Description</label>
+                                <textarea name="description" class="form-control" id="description" required>{{ data.description }}</textarea>
+                            </div>
+                            <div class="form-group col-12">
+                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+

@@ -1,0 +1,154 @@
+{% extends 'accountant/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Salary Transaction history</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Salary Transaction history</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            {% if data %}
+            <div class="card">
+                <h5 class="card-header d-inline">Salary Transaction history</h5>
+                <div class="card-body">
+                    <div class="row mt-0 mb-2">
+                        <div class="col-3"></div>
+                        <div class="col-3">
+                            <select class="form-control form-control-sm" name="ay_id" id="ay_id">
+                                <option value="">Choose...</option>
+                                {% if ay %} 
+                                {% for i in ay %}
+                                <option value="{{i.ay_id}}">{{i.academic_year}}</option>
+                                {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <select class="form-control form-control-sm" name="my" id="my">
+                                <option value="">Choose to month...</option>
+                                <option value="01">01</option>
+                                <option value="02">02</option>
+                                <option value="03">03</option>
+                                <option value="04">04</option>
+                                <option value="05">05</option>
+                                <option value="06">06</option>
+                                <option value="07">07</option>
+                                <option value="08">08</option>
+                                <option value="09">09</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <select class="form-control form-control-sm" name="staff_id" id="staff_id">
+                                <option value="">Choose Staff...</option>
+                                {% if staff %} 
+                                {% for i in staff %}
+                                <option value="{{i.sr_id}}">{{i.name}} ({{ i.designation.designation_name }})</option>
+                                {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th colspan="2">Staff</th>
+                            <th>Academic Year</th>
+                            <th>Salary total</th>
+                            <th>Salary date</th>
+                            <th>Status</th>
+                            <th colspan="2">#</th>
+                        </tr>
+                          </thead>
+                          <tbody id="tb">
+                            {% for i in data %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td><img src="{{i.staff.image}}" class="rounded" style="height: 60px; width:60px;" alt=""></td>
+                                <td>
+                                    {{i.staff.name}} <br>
+                                    Email : {{i.staff.login.username}} <br>
+                                    Contact number : {{i.staff.contact_number}}
+                                </td>
+                                <td>{{ i.academic_year.academic_year }}</td>
+                                <td>{{i.total_salary}}</td>
+                                <td>{{ i.salary_date }} </td>
+                                <td>
+                                    {% if i.approval_status == None %}
+                                        <div class="badge badge-warning">Pending</div>
+                                    {% elif i.approval_status == 'Approved' %}
+                                        <div class="badge badge-success">{{i.approval_status}}</div>
+                                    {% else %}
+                                        <div class="badge badge-danger">{{i.approval_status}}</div>
+                                    {% endif %} 
+                                </td>
+                                <td>
+                                    <a href="{% url 'salary_details' %}?st_id={{ i.st_id }}" class="btn btn-xs btn-primary">Salary details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <h4>Not found any list</h4>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+
+<script>
+    $(document).ready(function () {
+        function handleInputChange() {
+            var ayId = $("#ay_id").val();
+            var my = $("#my").val();
+            var staffId = $("#staff_id").val();
+
+            $.ajax({
+                url: '/search_salary/',
+                data: {
+                    'ay_id': ayId,
+                    'my': my,
+                    'staff_id': staffId,
+                },
+                success: function (data) {
+                    $("#tb").html(data);
+                }
+            });
+        }
+
+        $("#ay_id, #my, #staff_id").change(handleInputChange);
+    });
+</script>
+
+
+{% endblock content %}
+

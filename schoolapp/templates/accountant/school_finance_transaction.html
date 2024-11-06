@@ -1,0 +1,139 @@
+{% extends 'accountant/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">School Finance Transaction</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">School Finance Transaction</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        <div class="col-xl-9 col-lg-9 col-md-12 col-sm-12 col-12 m-auto">
+            {% if messages %}
+                {% for message in messages %}
+                    <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+            <div class="card">
+                <h5 class="card-header">School Finance Transaction</h5>
+                <div class="card-body">
+                    <form action="{% url 'school_finance_transaction' %}" method="post" enctype="multipart/form-data" id="myform">
+                        {% csrf_token %}
+                        <div class="row">
+                           
+                            <div class="form-group col-4">
+                                <label for="academic_year_id">Acadamic year</label>
+                                <select class="form-control form-control-sm" required name="academic_year_id" id="academic_year_id">
+                                    <option value="">--Select--</option>
+                                    {% if ay %} 
+                                    {% for i in ay %}
+                                    <option value="{{i.ay_id}}">{{i.academic_year}}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="school_finance_id">Finance type</label>
+                                <select class="form-control form-control-sm" required name="school_finance_id" id="school_finance_id">
+                                    <option value="">--Select--</option>
+                                    {% if data %} 
+                                    {% for i in data %}
+                                    <option value="{{i.sf_id}}">{{i.finance_type}}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="">Amount</label>
+                                <input type="text" name="total_amount" class="form-control" id="total_amount" required>
+                            </div>
+                            <div class="form-group col-12">
+                                <label for="">Description</label>
+                                <textarea name="description" class="form-control" id="description" required></textarea>
+                            </div>
+                            <div class="form-group col-12">
+                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+        description: {
+                        required: true,
+                    },
+        academic_year_id: {
+                        required: true,
+                    },
+        school_finance_id: {
+                        required: true,
+                    },
+        total_amount: {
+                required: true,
+                regex : /^[1-9]\d*$/,
+                    },
+                   
+              },
+              messages: {
+    
+                bonus: "Please Enter Valid number",
+                
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+{% endblock content %}
+

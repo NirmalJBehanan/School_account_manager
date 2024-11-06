@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Paid Students</title>
+    
+    <style>
+        /* Page styling to add headers and footers */
+        /* @page {
+            size: A4;
+            margin: 20mm; */
+            
+            /* Define a footer */
+            /* @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 12px;
+                color: #666;
+            } */
+        /* } */
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h4 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+       
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h4>SCHOOL ACCOUNTS MANAGEMENT</h4>
+                <h5 class="card-header">Salary slip</h5>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-7">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Academic year :</th>
+                                    <td>{{ data.academic_year.academic_year }}</td>
+                                    <th>Salary date : </th>
+                                    <td>{{ data.salary_date }}</td>
+                                </tr>
+                                <tr>
+                                    
+                                </tr>
+                                <tr>
+                                    <th>Name :</th>
+                                    <td>{{data.staff.name}}</td>
+                                    <th>Contact number :</th>
+                                    <td>{{data.staff.contact_number}}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">Designation :</th>
+                                    <td>{{data.staff.designation.designation_name}}</td>
+                                </tr>
+                                
+                                <tr>
+                                    <td colspan="4"><h3>SALARY DETAILS</h3></td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">BASIC PAY</th>
+                                    <td>{{ data.basic_pay }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">BONUS</th>
+                                    <td>{{ data.bonus }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">DA</th>
+                                    <td>{{ data.da_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">TA</th>
+                                    <td>{{ data.ta_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">HRA</th>
+                                    <td>{{ data.hra_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">AGP</th>
+                                    <td>{{ data.agp_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">TOTAL</th>
+                                    <td>{{ data.total_salary }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">DEDUCION</th>
+                                    <td>{{ data.deductions }}</td>
+                                </tr>
+                                <tr>
+                                    <th colspan="3">TOTAL</th>
+                                    <th class="h6">{{ data.payable }}</th>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+

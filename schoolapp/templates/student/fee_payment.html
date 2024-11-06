@@ -1,0 +1,65 @@
+{% extends 'student/header.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<header id="header" class="ex-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="white">Contact Us</h1>
+            </div> 
+        </div> 
+    </div> 
+</header>
+ 
+
+<div id="description" class="basic-2">
+    <div class="container">
+        <h2>Fees</h2>
+
+        {% if data == 'Not exist' %}
+            <div class="alert alert-success">You have not any pending payments</div>
+        {% elif data %}
+        <h4>{{ fee.fee_type }}</h4>
+        <h5>Amount : {{ fee.amount }}</h5>
+        <table class="table table-bordered">
+            <tr>
+                <th>#</th>
+                <th>Month</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>#</th>
+            </tr>
+            
+            {% for i in data %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{ i.month }}-{{ i.year }}</td>
+                    <td>
+                        {% if i.status == True %}
+                            <div class="badge badge-success">Paid</div>
+                        {% else %}
+                            <div class="badge badge-danger">Not Paid</div>
+                            
+                            {% if i.fine %}
+                                Fine {{ i.fine }}
+                            {% endif %}
+                                
+                        {% endif %}
+                    </td>
+                    <td>{{ i.total }}</td>
+                    <td><a href="{% url 'payment' %}?ay_id={{ ay.ay_id }}&mo={{ i.month }}&ye={{ i.year }}&sf_id={{ sf_id }}" class="btn btn-sm btn-primary">PAY NOW</a></td>
+                </tr>
+            {% endfor %}
+                
+        </table>
+        {% else %}
+            <div class="alert alert-danger">Academic Year Not Found</div>
+        {% endif %}
+    </div> 
+</div>
+
+
+{% endblock content %}

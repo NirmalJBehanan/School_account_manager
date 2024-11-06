@@ -1,0 +1,130 @@
+{% extends 'master/header.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">School finance</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">School finance</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            {% if data %}
+            <div class="card">
+                <h5 class="card-header">School finance</h5>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Account category</th>
+                                <th>Finance type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in data %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td>{{i.account_category}}</td>
+                                <td>{{i.finance_type}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>       
+    </div>
+</div>
+  
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+            level: {
+                        required: true,
+                    },
+
+                    finance_type: {
+                        required: true,
+                        remote: {
+                            url: '/check_value_exist/',
+                            type: 'GET',
+                            data: {
+                                chval: function () {
+                                    return $("#finance_type").val();
+                                },
+                                'tbl' : 'School_finance', 
+                                'fil': 'finance_type'
+                            },
+                            dataFilter: function (data) {
+                                var json = JSON.parse(data);
+                                if (json.exists) {
+                                    return false; 
+                                } else {
+                                    return true; 
+                                }
+                            }
+                        }
+                    },
+              },
+              messages: {
+
+                finance_type: {
+                        required: "finance type is required.",
+                        remote: "finance type already exists."
+                    },
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+{% endblock content %}
+

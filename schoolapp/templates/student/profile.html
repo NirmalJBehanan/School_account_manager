@@ -1,0 +1,144 @@
+{% extends 'student/header.html' %}
+{% load static %}
+
+{% block content %}
+<header id="header" class="ex-header">
+  <div class="container">
+      <div class="row">
+          <div class="col-md-12">
+              <h1 class="white">Profile</h1>
+          </div> 
+      </div> 
+  </div> 
+</header>>
+
+
+<section class="p-3 p-md-4 p-xl-5">
+  <div class="container">
+    <h2>Profile</h2>
+    <div class="row">
+        <div class="col-6">
+            {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+            <form action="{% url 'profile' %}" method="post" enctype="multipart/form-data" id="myform">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="form-group col-6">
+                        <label for="">Full Name</label>
+                        <input type="text" value="{{ data.name }}" name="name" class="form-control" id="name" required>
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" value="{{ data.email }}" name="email" id="email">
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="Contact" class="form-label">Contact number</label>
+                        <input type="text" class="form-control" value="{{ data.contact_number }}" name="contact_number" required>
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" name="address" rows="2" required>{{ data.address }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="image" class="form-label">Image</label>
+                        <input type="file" class="form-control bg-white" name="image" id="image">
+                        {% if data.image %}
+                        <img src="{{data.image}}" height="50" class="rounded" width="50" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="gender" class="form-label">Gender</label><br>
+                        <input type="checkbox" value="male"  {% if data.gender == 'male' %} checked {% endif %} name="gender" id="gender"> Male
+                        <input type="checkbox" value="Female"  name="gender" {% if data.gender == 'Female' %} checked {% endif %} id="gender"> Female
+                    </div>
+                    <div class="form-group col-12">
+                        <button type="submit" class="btn btn-sm btn-primary mt-3">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+</section>
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+                name: {
+                      required: true,
+                      regex : /^[A-Za-z ]+$/,
+                      minlength: 3,
+        
+                    },
+                    address: {
+                        required: true,
+                      minlength: 3,
+        
+                    },
+                    contact_number: {
+                        required: true,
+                        digits:true,
+                           minlength: 10,
+                           maxlength: 10,
+                           regex : /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/
+                    },
+
+                   
+        
+                    email: {
+                     regex :  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+                    },
+                    gender: {
+                        required: true,
+                    },
+                    image: {
+                    extension:'jpg|jpeg|png'
+                        },
+              
+                
+              },
+              messages: {
+    
+                contact_number: "Please Enter Valid 10 digit Phone Number - Starting from 6, 7 or 8 or 9",
+                image : "Please enter a value with a valid extension. jpg|jpeg|png",
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+{% endblock content %}

@@ -1,0 +1,83 @@
+{% extends 'master/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Student fee dues</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Student fee dues</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h5 class="card-header">Student fee dues</h5>
+                <div class="card-body">
+                    <div class="row mt-0 mb-2">
+                        <div class="col-6"></div>
+                        <div class="col-3">
+                            <input type="month" class="form-control" id="dt" name="dt">
+                        </div>
+                        <div class="col-3">
+                            <select class="form-control form-control-sm" name="s_id" id="s_id">
+                                <option value="">Choose Standard...</option>
+                                {% if std %} 
+                                {% for i in std %}
+                                <option value="{{i.s_id}}">{{i.standard}}</option>
+                                {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tb"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    $(document).ready(function () {
+      $("#s_id").change(function () {
+            var id = $(this).val();
+            var dt = $("#dt").val();
+            
+            $.ajax({
+  
+                  url: '/student_fee_dues/',
+                  data: {
+                    's_id': id,
+                    'dt':dt
+                  },
+                  
+                  success: function (data) {
+  
+                    $("#tb").html(data)
+  
+                    }
+            });
+          });
+    });
+    </script>
+
+{% endblock content %}
+

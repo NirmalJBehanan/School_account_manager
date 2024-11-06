@@ -1,0 +1,201 @@
+{% extends 'faculty/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Apply Leave</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Apply Leave</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        <div class="col-xl-7 col-lg-7 col-md-12 col-sm-12 col-12 m-auto">
+            {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %}
+            <div class="card">
+                <h5 class="card-header">Apply Leave</h5>
+                <div class="card-body">
+                    <form action="{% url 'leave_apply' %}" method="post" enctype="multipart/form-data" id="myform">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group col-4">
+                                <label for="leave_type_id">Leave type</label>
+                                <select class="form-control form-control-sm" required name="leave_type_id" id="designation_id">
+                                    <option value="">--Select--</option>
+                                    {% if data %} 
+                                      {% for i in data %}
+                                      <option value="{{i.lt_id}}">{{i.leave_type}}</option>
+                                      {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="start_date" class="form-label">From date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="end_date" class="form-label">To date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" required>
+                            </div>
+                            <div class="form-group col-12">
+                                <label for="">Reason</label>
+                                <textarea name="reason" class="form-control" id="reason" required></textarea>
+                            </div>
+                            <div class="form-group col-12">
+                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+  
+
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+        leave_type_id:{
+            required:true
+        },
+        start_date:{
+            required:true,
+            remote: {
+                    url: '/check_leave_exist/',
+                    type: 'GET',
+                    data: {
+                        start_date: function () {
+                            return $("#start_date").val();
+                        },
+                        end_date: function () {
+                            return $("#end_date").val();
+                        },
+                    },
+                    dataFilter: function (data) {
+                        var json = JSON.parse(data);
+                        if (json.exists) {
+                            return false; // Return false if the year exists
+                        } else {
+                            return true; // Return true if the year is unique
+                        }
+                    }
+                        }
+                    },
+            reason: {
+                        required: true,
+                        
+                    },
+               
+               
+              },
+              messages: {
+                start_date: {
+                        required: "Date is required.",
+                        remote: "You already take leave in this range."
+                    },
+                days: "Please Enter Number of days",
+                
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+<script>
+    $(function(){
+        var dtToday = new Date();
+
+        var year = dtToday.getFullYear();
+        var month = dtToday.getMonth() + 1;
+
+        let nextMonth = new Date(year, month + 1, 1);
+        
+        let lastDay = new Date(nextMonth -1).getDate()+1;
+     
+        
+        var day = dtToday.getDate() ;
+        
+        if (month < 10) month = '0' + month.toString();
+        if (day < 10) day = '0' + day.toString();
+        if (lastDay < 10) lastDay = '0' + lastDay.toString();
+        
+        var minDate = year + '-' + month + '-' + day;
+        var maxDate = year + '-' + month + '-' + lastDay;
+
+
+        $('#start_date').attr('min', minDate);
+        $('#end_date').attr('min', minDate);
+        $('#start_date').attr('max', maxDate);
+        $('#end_date').attr('max', maxDate);
+    });
+    </script>
+
+<script>
+    $(document).ready(function () {
+      $("#start_date").change(function () {
+        var startDate = new Date($(this).val());
+            
+            // Format the date to YYYY-MM-DD for the input
+            var day = String(startDate.getDate()).padStart(2, '0');
+            var month = String(startDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+            var year = startDate.getFullYear();
+            var minDate = year + '-' + month + '-' + day;
+
+            $('#end_date').attr('min', minDate);
+            $('#end_date').val(minDate);
+           
+            
+          });
+    });
+    </script>
+
+{% endblock content %}
+

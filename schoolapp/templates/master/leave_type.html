@@ -1,0 +1,147 @@
+{% extends 'master/header.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Leave type</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Leave type</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!-- ============================================================== -->
+        <!-- basic form -->
+        <!-- ============================================================== -->
+        
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            {% if messages %}
+                {% for message in messages %}
+                <h6 class="alert alert-success">{{message}}</h6>       
+                {% endfor %}
+            {% endif %} 
+            {% if data %}
+            <div class="card">
+                <h5 class="card-header">Leave types</h5>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Leave type</th>
+                                <th>Days</th>
+                                <th colspan="2">#</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in data %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td>{{i.leave_type}}</td>
+                                <td>{{i.days}}</td>
+                                <td><a href="{% url 'edit_leave_type' %}?lt_id={{i.lt_id}}" class="btn btn-primary btn-xs">Edit</a></td>
+                                <td>
+                                    {% if i.status == True %}
+                                    <a href="{% url 'status_leave_type' %}?lt_id={{i.lt_id}}&status=0" class="btn btn-danger btn-xs">Disable</a>
+                                    {% else %}
+                                    <a href="{% url 'status_leave_type' %}?lt_id={{i.lt_id}}&status=1" class="btn btn-success btn-xs">Enable</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+  
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    (function ($, W, D)
+    {
+    var JQUERY4U = {};
+    JQUERY4U.UTIL =
+    {
+    setupFormValidation: function ()
+    {
+    $.validator.addMethod(
+    "regex",
+    function(value, element, regexp) {
+    var check = false;
+    return this.optional(element) || regexp.test(value);
+    },
+    "Not a valid Input."
+    );
+    
+    //form validation rules
+    $("#myform").validate({
+    ignore: [],
+    rules: {
+                
+                leave_type: {
+                        required: true,
+                        remote: {
+                            url: '/check_value_exist/',
+                            type: 'GET',
+                            data: {
+                                chval: function () {
+                                    return $("#leave_type").val();
+                                },
+                                'tbl' : 'Leave_type', 
+                                'fil': 'leave_type'
+                            },
+                            dataFilter: function (data) {
+                                var json = JSON.parse(data);
+                                if (json.exists) {
+                                    return false; // Return false if the year exists
+                                } else {
+                                    return true; // Return true if the year is unique
+                                }
+                            }
+                        }
+                    },
+                days:{
+                    required:true,
+                    regex : /^[1-9]\d*$/,
+                }
+               
+              },
+              messages: {
+                leave_type: {
+                        required: "Leave type is required.",
+                        remote: "Leave type already exists."
+                    },
+                days: "Please Enter Number of days",
+                
+    },
+    submitHandler: function (form) {
+    form.submit();
+    }
+    });
+    }
+    }
+    //when the dom has loaded setup form validation rules
+    $(D).ready(function ($) {
+    JQUERY4U.UTIL.setupFormValidation();
+    });
+    })(jQuery, window, document);
+    </script>
+
+{% endblock content %}
+

@@ -1,0 +1,55 @@
+{% extends 'student/header.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<header id="header" class="ex-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="white">My Payments list</h1>
+            </div> 
+        </div> 
+    </div> 
+</header>
+ 
+
+<div id="description" class="basic-2">
+    <div class="container">
+        <h2>My payments</h2>
+        {% if data %}
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Academic Year</th>
+                <th>Fee Type</th>
+                <th>Paid Date</th>
+                <th>Amount</th>
+                <th>#</th>
+            </tr>
+              </thead>
+              <tbody id="tb">
+                {% for i in data %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{ i.academic_year.academic_year }}</td>
+                    <td>{{i.student_fee.fee_type}} : {{ i.payment_date|date:"m-Y" }}</td>
+                    <td>{{ i.created_at }} </td>
+                    <td>{{ i.total_amount }}</td>
+                    <td><a href="{% url 'fee_pdf' %}?sft_id={{ i.sft_id }}" class="btn btn-sm btn-dark">Download PDF <i class="fa fa-file-pdf text-danger"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+         <h3>Not Found Any List</h3>
+        {% endif %}
+            
+        
+    </div> 
+</div>
+
+
+{% endblock content %}

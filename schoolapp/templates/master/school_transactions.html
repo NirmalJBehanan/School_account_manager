@@ -1,0 +1,109 @@
+{% extends 'master/index.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid  dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">School Transactions</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">School Transactions</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="row mt-0 mb-2">
+                <div class="col-3"></div>
+                <div class="col-3">
+                    <select class="form-control form-control-sm" name="ay_id" id="ay_id">
+                        <option value="">Choose...</option>
+                        {% if ay %} 
+                        {% for i in ay %}
+                        <option value="{{i.ay_id}}">{{i.academic_year}}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-control form-control-sm" name="sm" id="sm">
+                        <option value="">Choose month...</option>
+                        <option value="01">01</option>
+                        <option value="02">02</option>
+                        <option value="03">03</option>
+                        <option value="04">04</option>
+                        <option value="05">05</option>
+                        <option value="06">06</option>
+                        <option value="07">07</option>
+                        <option value="08">08</option>
+                        <option value="09">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <select class="form-control form-control-sm" name="em" id="em">
+                        <option value="">Choose to month...</option>
+                        <option value="01">01</option>
+                        <option value="02">02</option>
+                        <option value="03">03</option>
+                        <option value="04">04</option>
+                        <option value="05">05</option>
+                        <option value="06">06</option>
+                        <option value="07">07</option>
+                        <option value="08">08</option>
+                        <option value="09">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12" id="tb">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+
+<script>
+    $(document).ready(function () {
+        function handleInputChange() {
+            var ayId = $("#ay_id").val();
+            var sm = $("#sm").val();
+            var em = $("#em").val();
+            
+            $.ajax({
+                url: '/school_transactions_search/',
+                data: {
+                    'ay_id': ayId,
+                    'sm': sm,
+                    'em': em,
+                },
+                success: function (data) {
+                    $("#tb").html(data);
+                }
+            });
+        }
+
+        $("#ay_id, #sm, #em").change(handleInputChange);
+    });
+</script>
+
+{% endblock content %}
+
