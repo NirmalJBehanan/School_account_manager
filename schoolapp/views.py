@@ -10,6 +10,7 @@ from django.middleware.csrf import get_token
 from django.apps import apps
 from email.message import EmailMessage
 from django.db.models.functions import Concat,Cast
+from dotenv import load_dotenv
 import ssl
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
@@ -17,8 +18,10 @@ import smtplib
 import random
 import string
 import json
+import os
 
- 
+load_dotenv() 
+
 # Create your views here.
 def index(request):
     return render(request,'index.html')
@@ -243,8 +246,8 @@ def staff_register(request):
             return redirect('/staff_register/')
         except Exception:
             password = generate_password()
-            email_sender="nirmaljbehanan2025@mca.ajce.in"    
-            email_password="hkktzjkcxlpvpowv" 
+            email_sender=os.environ.get('EMAIL')    
+            email_password=os.environ.get('EMAIL_PASSWORD') 
             email_receiver=request.POST['email']
             subject="School accounts management-password"
             
