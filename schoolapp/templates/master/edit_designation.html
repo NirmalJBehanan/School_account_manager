@@ -82,25 +82,7 @@
                 
         designation_name: {
                         required: true,
-                        remote: {
-                            url: '/check_value_exist/',
-                            type: 'GET',
-                            data: {
-                                chval: function () {
-                                    return $("#designation_name").val();
-                                },
-                                'tbl' : 'Designation', 
-                                'fil': 'designation_name'
-                            },
-                            dataFilter: function (data) {
-                                var json = JSON.parse(data);
-                                if (json.exists) {
-                                    return false; // Return false if the year exists
-                                } else {
-                                    return true; // Return true if the year is unique
-                                }
-                            }
-                        }
+                        
                     },
                
                

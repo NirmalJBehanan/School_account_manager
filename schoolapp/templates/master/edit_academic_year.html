@@ -99,23 +99,7 @@
                             minlength: 4,
                             maxlength: 4,
                             regex: /^[1-9]\d{3}$/,
-                            remote: {
-                                url: '/check_academic_year_exist/',
-                                type: 'GET',
-                                data: {
-                                    academic_year: function () {
-                                        return $("#syear").val();
-                                    }
-                                },
-                                dataFilter: function (data) {
-                                    var json = JSON.parse(data);
-                                    if (json.exists) {
-                                        return false; // Return false if the year exists
-                                    } else {
-                                        return true; // Return true if the year is unique
-                                    }
-                                }
-                            }
+                            
                         },
                     },
                     messages: {
