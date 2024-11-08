@@ -1034,7 +1034,7 @@ def school_finance_transactions_history(request):
     ay = Academic_year.objects.filter(status=True) 
     data = School_finance_transaction.objects.filter(approval_status='Approved').select_related('academic_year','school_finance')         
     if 'accountant' in request.session:
-        return render(request,'accountant/school_finance_transaction_list.html',{'data':data,'ay':ay})
+        return render(request,'accountant/school_finance_transaction_history.html',{'data':data,'ay':ay})
     elif 'master' in request.session:
         return render(request,'master/school_finance_transaction_history.html',{'data':data,'ay':ay})
     else:
