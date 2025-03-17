@@ -1,0 +1,133 @@
+{% extends 'master/header.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h2 class="pageheader-title">View Staff Attendance</h2>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">View Attendance</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>View Staff Attendance</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="start_date">Start Date:</label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="start_date" 
+                               name="start_date"
+                               value="{{ start_date }}"
+                               min="{{ min_date|date:'Y-m-d' }}"
+                               max="{{ max_date|date:'Y-m-d' }}"
+                               required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="end_date">End Date:</label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="end_date" 
+                               name="end_date"
+                               value="{{ end_date }}"
+                               min="{{ min_date|date:'Y-m-d' }}"
+                               max="{{ max_date|date:'Y-m-d' }}"
+                               required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="staff_id">Select Staff:</label>
+                        <select class="form-control" id="staff_id" name="staff_id">
+                            <option value="">All Staff</option>
+                            {% for staff in staff_list %}
+                            <option value="{{ staff.sr_id }}" 
+                                    {% if selected_staff_id == staff.sr_id|stringformat:"s" %}selected{% endif %}>
+                                {{ staff.name }} ({{ staff.designation.designation_name }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary d-block">View Attendance</button>
+                    </div>
+                </div>
+            </form>
+
+            {% if attendance_data %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Staff Details</th>
+                            {% for date in attendance_data.0.attendance %}
+                            <th>{{ date.date|date:"d M" }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_data %}
+                        <tr>
+                            <td>
+                                <img src="{{ record.staff.image }}" 
+                                     class="rounded" 
+                                     style="height: 40px; width:40px;" 
+                                     alt="">
+                                <br>
+                                {{ record.staff.name }}
+                                <br>
+                                <small>{{ record.staff.designation.designation_name }}</small>
+                            </td>
+                            {% for att in record.attendance %}
+                            <td class="text-center">
+                                {% if att.status == 'Present' %}
+                                <span class="badge bg-success">P</span>
+                                {% elif att.status == 'Absent' %}
+                                <span class="badge bg-danger">A</span>
+                                {% else %}
+                                <span class="badge bg-warning">-</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% elif start_date %}
+            <div class="alert alert-info">No attendance records found for the selected date range.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('end_date').addEventListener('change', function() {
+    var startDate = new Date(document.getElementById('start_date').value);
+    var endDate = new Date(this.value);
+    
+    if (endDate < startDate) {
+        alert('End date cannot be before start date');
+        this.value = document.getElementById('start_date').value;
+    }
+});
+
+document.getElementById('start_date').addEventListener('change', function() {
+    var endDate = document.getElementById('end_date');
+    if (endDate.value && new Date(endDate.value) < new Date(this.value)) {
+        endDate.value = this.value;
+    }
+});
+</script>
+{% endblock %} 

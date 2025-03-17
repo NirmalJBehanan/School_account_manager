@@ -2,131 +2,398 @@
 {% block content %}
 {% load static %}
 
-<div class="container-fluid  dashboard-content">
+<div class="container-fluid dashboard-content">
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="page-header">
-                <h3 class="mb-2">Edit Student fee</h3>
+                <h3 class="mb-2">Edit Student Fee</h3>
                 <div class="page-breadcrumb">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Edit Student fee</li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit Student Fee</li>
                         </ol>
                     </nav>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="row">
-        <!-- ============================================================== -->
-        <!-- basic form -->
-        <!-- ============================================================== -->
         <div class="col-xl-5 col-lg-5 col-md-12 col-sm-12 col-12">
             {% if messages %}
                 {% for message in messages %}
-                <h6 class="alert alert-success">{{message}}</h6>       
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+                        {% if message.tags == 'error' %}
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                        {% elif message.tags == 'success' %}
+                            <i class="fas fa-check-circle mr-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
                 {% endfor %}
-            {% endif %} 
+            {% endif %}
+
             <div class="card">
-                <h5 class="card-header">Edit Student fee</h5>
+                <h5 class="card-header bg-primary text-white">
+                    <i class="fas fa-edit mr-2"></i>Edit Fee Structure
+                </h5>
                 <div class="card-body">
-                    <form action="{% url 'edit_student_fee' %}" method="post" id="myform">
-                        {% csrf_token %}
+                    <!-- Add Current Values Summary -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading mb-2"><i class="fas fa-info-circle mr-2"></i>Current Values:</h6>
                         <div class="row">
-                            <input type="hidden" name="sf_id" value="{{ data.sf_id }}">
-                            <div class="form-group col-6">
-                                <label for="type">Education level</label>
-                                <select name="educational_level_id" required="" class="form-control form-control-sm">
-                                    <option value="">--Select--</option>
-                                    {% if edl %} 
-                                      {% for i in edl %}
-                                      <option value="{{i.el_id}}" {% if data.educational_level_id == i.el_id %} selected {% endif %}>{{i.level}}</option>
-                                      {% endfor %}
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Education Level:</strong> {{ fee.educational_level.level }}</p>
+                                <p class="mb-1"><strong>Fee Type:</strong> {{ fee.fee_type }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Term:</strong> 
+                                    {% if fee.term == "1" %}First Term (June-August)
+                                    {% elif fee.term == "2" %}Second Term (September-November)
+                                    {% else %}Third Term (December-March)
                                     {% endif %}
-                                </select>
-                            </div>
-                            <div class="form-group col-6">
-                                <label for="type">Account category</label>
-                                <select name="account_category" required="" class="form-control form-control-sm">
-                                    <option value="">--Select--</option>
-                                    <option {% if data.account_category == 'Income' %} selected {% endif %} value="Income">Income</option>
-                                    <option {% if data.account_category == 'Expense' %} selected {% endif %} value="Expense">Expense</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-12">
-                                <label for="fee_type">Fee type</label>
-                                <input type="text" name="fee_type" value="{{ data.fee_type }}" required="" class="form-control">
-                            </div>
-                            <div class="form-group col-12">
-                                <label for="amount">Amount</label>
-                                <input type="text" name="amount" required="" value="{{ data.amount }}"  class="form-control">
+                                </p>
+                                <p class="mb-1"><strong>Current Amount:</strong> ₹{{ fee.amount }}</p>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12 pl-0">
-                                <p class="text-right">
-                                    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
-                                </p>
+                    </div>
+
+                    <form action="{% url 'edit_student_fee' %}" method="post" id="feeForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="sf_id" value="{{ fee.sf_id }}">
+
+                        <div class="form-group">
+                            <label>Education Level <span class="text-danger">*</span></label>
+                            <select name="educational_level_id" id="educational_level_id" class="form-control" required>
+                                <option value="">Select Level</option>
+                                {% for level in edl %}
+                                    <option value="{{ level.el_id }}" {% if fee.educational_level_id == level.el_id %}selected{% endif %}>
+                                        {{ level.level }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Account Category</label>
+                            <input type="text" class="form-control" value="Income" readonly>
+                            <input type="hidden" name="account_category" value="Income">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fee Type <span class="text-danger">*</span></label>
+                            <select name="fee_type" id="fee_type" class="form-control" required>
+                                <option value="">Select Fee Type</option>
+                                <option value="Tuition fees" {% if fee.fee_type == "Tuition fees" %}selected{% endif %}>Tuition fees</option>
+                                <option value="Bus Fee" {% if fee.fee_type == "Bus Fee" %}selected{% endif %}>Bus Fee</option>
+                                <option value="Library Fee" {% if fee.fee_type == "Library Fee" %}selected{% endif %}>Library Fee</option>
+                                <option value="Computer Fee" {% if fee.fee_type == "Computer Fee" %}selected{% endif %}>Computer Fee</option>
+                                <option value="Miscellaneous Fee" {% if fee.fee_type == "Miscellaneous Fee" %}selected{% endif %}>Miscellaneous Fee</option>
+                                <option value="Tour Fee" {% if fee.fee_type == "Tour Fee" %}selected{% endif %}>Tour Fee</option>
+                                <option value="Uniform Fee" {% if fee.fee_type == "Uniform Fee" %}selected{% endif %}>Uniform Fee</option>
+                                <option value="Stationery fees" {% if fee.fee_type == "Stationery fees" %}selected{% endif %}>Stationery fees</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Term <span class="text-danger">*</span></label>
+                            <select name="term" id="term" class="form-control" required>
+                                <option value="">Select Term</option>
+                                <option value="1" {% if fee.term == "1" %}selected{% endif %}>First Term (June-August)</option>
+                                <option value="2" {% if fee.term == "2" %}selected{% endif %}>Second Term (September-November)</option>
+                                <option value="3" {% if fee.term == "3" %}selected{% endif %}>Third Term (December-March)</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                First Term: Due by September 20th<br>
+                                Second Term: Due by December 20th<br>
+                                Third Term: Due by April 20th
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">₹</span>
+                                </div>
+                                <input type="number" name="amount" id="amount" class="form-control" 
+                                       value="{{ fee.amount }}" required>
                             </div>
+                            <small id="amountHelp" class="form-text text-muted">
+                                Amount limits will be shown based on selected education level and fee type
+                            </small>
+                            <div id="amountError" class="alert alert-danger mt-2" style="display: none;">
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-0">
+                            <button type="submit" id="submitBtn" class="btn btn-primary">
+                                <i class="fas fa-save mr-1"></i> Update Fee Structure
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-        </div>    
+        </div>
     </div>
 </div>
-  
-<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
-<script src="{% static 'Validation/jquery_validate.js' %}"></script>
-<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
 
 <script>
-    (function ($, W, D)
-    {
-    var JQUERY4U = {};
-    JQUERY4U.UTIL =
-    {
-    setupFormValidation: function ()
-    {
-    $.validator.addMethod(
-    "regex",
-    function(value, element, regexp) {
-    var check = false;
-    return this.optional(element) || regexp.test(value);
-    },
-    "Not a valid Input."
-    );
-    
-    //form validation rules
-    $("#myform").validate({
-    ignore: [],
-    rules: {
-                
-        level: {
-                        required: true,
-                    },
+$(document).ready(function() {
+    const educationLevelSelect = $('#educational_level_id')[0];
+    const feeTypeSelect = $('#fee_type')[0];
+    const amountInput = $('#amount')[0];
+    const amountHelp = $('#amountHelp')[0];
+    const amountError = $('#amountError')[0];
+    const submitBtn = $('#submitBtn')[0];
+    const form = $('#feeForm')[0];
+    let currentLimits = null;
 
-               
-              },
-              messages: {
+    // Function to show error message
+    function showError(message) {
+        $(amountError).html(`<i class="fas fa-exclamation-circle mr-1"></i>${message}`);
+        $(amountError).slideDown();
+        $(submitBtn).prop('disabled', true);
+        $(amountInput).addClass('is-invalid');
+    }
 
-                password: "Please Enter Valid Password Name(8-15 digit alphanumeric  password  and must include @#*!%^& special character,any Number",
-                cpas: "Please Enter Valid Password Name(5-15 digit alphanumeric confirm password and same as above password and @#* also allowed",
-                
-    },
-    submitHandler: function (form) {
-    form.submit();
+    // Function to hide error message
+    function hideError() {
+        $(amountError).slideUp();
+        $(submitBtn).prop('disabled', false);
+        $(amountInput).removeClass('is-invalid');
     }
+
+    // Function to check fee limits
+    function checkFeeLimits(skipValidation = false) {
+        const educationLevelId = $(educationLevelSelect).val();
+        const feeType = $(feeTypeSelect).val();
+
+        hideError();
+        if (educationLevelId && feeType) {
+            $.ajax({
+                url: "{% url 'get_fee_limits' %}",
+                data: {
+                    'educational_level_id': educationLevelId,
+                    'fee_type': feeType
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.success) {
+                        currentLimits = {
+                            lower: data.lower_limit,
+                            upper: data.upper_limit
+                        };
+                        $(amountHelp).html(`Valid amount range: ₹${data.lower_limit} - ₹${data.upper_limit}`);
+                        $(amountHelp).removeClass().addClass('form-text text-info');
+                        
+                        // Set input attributes
+                        $(amountInput).attr({
+                            'min': data.lower_limit,
+                            'max': data.upper_limit
+                        });
+                        
+                        // Only validate if not skipping validation
+                        if (!skipValidation && $(amountInput).val()) {
+                            validateAmount($(amountInput).val());
+                        }
+                    } else {
+                        currentLimits = null;
+                        if (!skipValidation) {
+                            showError('No fee limits found for this combination. Please select different options.');
+                            $(amountInput).val('');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    if (!skipValidation) {
+                        showError('Error fetching fee limits. Please try again.');
+                    }
+                    currentLimits = null;
+                }
+            });
+        } else {
+            currentLimits = null;
+            $(amountHelp).html('Select education level and fee type first');
+            $(amountHelp).removeClass().addClass('form-text text-muted');
+        }
+    }
+
+    // Function to validate amount
+    function validateAmount(value) {
+        hideError();
+        
+        if (!currentLimits) {
+            showError('Please select education level and fee type first');
+            return false;
+        }
+        
+        const amount = parseFloat(value);
+        if (isNaN(amount)) {
+            showError('Please enter a valid number');
+            return false;
+        }
+        
+        if (amount < currentLimits.lower) {
+            showError(`Amount cannot be below ₹${currentLimits.lower}`);
+            return false;
+        }
+        if (amount > currentLimits.upper) {
+            showError(`Amount cannot exceed ₹${currentLimits.upper}`);
+            return false;
+        }
+        
+        $(amountHelp).html(`Valid amount range: ₹${currentLimits.lower} - ₹${currentLimits.upper}`);
+        $(amountHelp).removeClass().addClass('form-text text-success');
+        return true;
+    }
+
+    // Event listeners
+    $(educationLevelSelect).on('change', function() {
+        checkFeeLimits(false);  // Normal validation on change
     });
-    }
-    }
-    //when the dom has loaded setup form validation rules
-    $(D).ready(function ($) {
-    JQUERY4U.UTIL.setupFormValidation();
+    $(feeTypeSelect).on('change', function() {
+        checkFeeLimits(false);  // Normal validation on change
     });
-    })(jQuery, window, document);
-    </script>
+    $(amountInput).on('input', function() {
+        validateAmount(this.value);
+    });
+
+    // Initialize with skipValidation=true to load limits without showing errors
+    checkFeeLimits(true);
+
+    // Form validation
+    $("#feeForm").validate({
+        rules: {
+            educational_level_id: "required",
+            fee_type: "required",
+            term: "required",
+            amount: {
+                required: true,
+                number: true
+            }
+        },
+        messages: {
+            educational_level_id: "Please select an education level",
+            fee_type: "Please select a fee type",
+            term: "Please select a term",
+            amount: {
+                required: "Please enter an amount",
+                number: "Please enter a valid number"
+            }
+        },
+        errorPlacement: function(error, element) {
+            if (element.attr("name") === "amount") {
+                showError(error.text());
+            } else {
+                error.insertAfter(element);
+            }
+        },
+        submitHandler: function(form) {
+            // First validate the amount against limits
+            if (!currentLimits) {
+                showError('Please select education level and fee type first');
+                return false;
+            }
+            
+            const amount = parseFloat($(amountInput).val());
+            if (!validateAmount(amount)) {
+                return false;
+            }
+
+            // Then check for duplicate fee
+            var educational_level_id = $(educationLevelSelect).val();
+            var fee_type = $(feeTypeSelect).val();
+            var term = $('#term').val();
+            var current_sf_id = $('input[name="sf_id"]').val();
+            
+            $.ajax({
+                url: '/check_student_fee_exist/',
+                data: {
+                    'educational_level_id': educational_level_id,
+                    'fee_type': fee_type,
+                    'term': term,
+                    'current_sf_id': current_sf_id
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.exists) {
+                        showError('This fee type is already added for the selected term!');
+                    } else {
+                        form.submit();
+                    }
+                },
+                error: function() {
+                    showError('Something went wrong! Please try again.');
+                }
+            });
+            return false;
+        }
+    });
+});
+</script>
+
+<style>
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 0.75rem 1.25rem;
+    margin-top: 0.5rem;
+    border-radius: 0.25rem;
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    border-left: 5px solid #17a2b8;
+}
+.alert-info .alert-heading {
+    color: #17a2b8;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem !important;
+}
+.alert-info p {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+.alert-info strong {
+    color: #0c5460;
+}
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.text-success {
+    color: #28a745 !important;
+}
+.text-danger {
+    color: #dc3545 !important;
+}
+.text-info {
+    color: #17a2b8 !important;
+}
+</style>
 
 {% endblock content %}
 

@@ -1,0 +1,579 @@
+{% extends 'master/header.html' %}
+{% load custom_filters %}
+{% block content %}
+<style>
+    .btn-group {
+        display: flex;
+        gap: 10px;
+    }
+    /* Calendar styling */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+    }
+    
+    /* Style for disabled dates */
+    .weekend {
+        color: #dc3545;
+        text-decoration: line-through;
+        background-color: #ffebee;
+        cursor: not-allowed !important;
+    }
+    
+    /* Calendar container */
+    .calendar-container {
+        position: relative;
+    }
+    
+    .calendar-overlay {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-outline-success, .btn-outline-danger {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 15px;
+        cursor: pointer;
+        border: 2px solid;
+        transition: all 0.3s;
+    }
+    .btn-outline-success.active {
+        background-color: #28a745;
+        color: white;
+    }
+    .btn-outline-danger.active {
+        background-color: #dc3545;
+        color: white;
+    }
+    .status-icon {
+        margin-right: 5px;
+    }
+    .date-status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        margin-left: 10px;
+    }
+    
+    .date-status.marked {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .date-status.unmarked {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .leave-badge {
+        background-color: #ffc107;
+        color: #000;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        margin-left: 10px;
+    }
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h2 class="pageheader-title">Staff Attendance</h2>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'master_home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Mark Attendance</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if staff_list %}
+        <div class="card">
+            <div class="card-header">
+                <h5>Mark Staff Attendance</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" onsubmit="return validateForm()">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="attendance_date">Select Date:</label>
+                            <div class="calendar-container">
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="attendance_date" 
+                                       name="attendance_date"
+                                       min="{{ min_date|date:'Y-m-d' }}"
+                                       max="{% now 'Y-m-d' %}"
+                                       value="{{ selected_date|date:'Y-m-d' }}"
+                                       required>
+                                <div id="calendar_helper" class="calendar-overlay"></div>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> Weekends (Saturday and Sunday) are not available for attendance marking
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Staff Details</th>
+                                    <th>Designation</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for staff in staff_list %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <img src="{{ staff.image.url }}" class="rounded" style="height: 60px; width:60px;" alt="">
+                                        <br>{{ staff.name }}
+                                    </td>
+                                    <td>{{ staff.designation.designation_name }}</td>
+                                    <td>
+                                        {% with has_leave=staff.sr_id|has_approved_leave:selected_date %}
+                                        <div class="btn-group" role="group">
+                                            <input type="hidden" 
+                                                   id="status_input_{{ staff.sr_id }}"
+                                                   name="status_{{ staff.sr_id }}" 
+                                                   value="{% if has_leave %}absent{% else %}{{ attendance_records|get_item:staff.sr_id|default:'' }}{% endif %}"
+                                                   data-has-leave="{{ has_leave|yesno:'True,False' }}"
+                                                   required>
+                                            <button type="button" 
+                                                    class="btn btn-outline-success {% if attendance_records|get_item:staff.sr_id == 'present' %}active{% endif %}"
+                                                    onclick="markAttendance(this, 'present', '{{ staff.sr_id }}')"
+                                                    {% if has_leave %}disabled title="Staff is on approved leave"{% endif %}>
+                                                <i class="fas fa-check-circle status-icon"></i>
+                                                Present
+                                            </button>
+                                            
+                                            <button type="button"
+                                                    class="btn btn-outline-danger {% if has_leave or attendance_records|get_item:staff.sr_id == 'absent' %}active{% endif %}"
+                                                    onclick="markAttendance(this, 'absent', '{{ staff.sr_id }}')"
+                                                    {% if has_leave %}disabled title="Staff is on approved leave"{% endif %}>
+                                                <i class="fas fa-times-circle status-icon"></i>
+                                                Absent
+                                            </button>
+                                        </div>
+                                        <div id="status_text_{{ staff.sr_id }}" class="mt-2 text-center">
+                                            {% if has_leave %}
+                                                <small class="text-warning">
+                                                    <i class="fas fa-calendar-times status-icon"></i>
+                                                    On Approved Leave
+                                                    <span class="badge bg-warning text-dark">Auto-marked Absent</span>
+                                                </small>
+                                            {% elif attendance_records|get_item:staff.sr_id == 'present' %}
+                                                <small class="text-success">
+                                                    <i class="fas fa-check-circle status-icon"></i>
+                                                    Marked Present
+                                                </small>
+                                            {% elif attendance_records|get_item:staff.sr_id == 'absent' %}
+                                                <small class="text-danger">
+                                                    <i class="fas fa-times-circle status-icon"></i>
+                                                    Marked Absent
+                                                </small>
+                                            {% else %}
+                                                <small class="text-muted">Not marked</small>
+                                            {% endif %}
+                                        </div>
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button type="submit" id="submitBtn" class="btn btn-primary">Submit Attendance</button>
+                        <button type="button" id="editBtn" class="btn btn-warning" style="display: none;">
+                            <i class="fas fa-edit"></i> Edit Attendance
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            No active staff members found. Please make sure there are staff members with active status.
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Function to check if a date is a weekend
+function isWeekend(date) {
+    const day = date.getDay();
+    return day === 0 || day === 6;  // 0 is Sunday, 6 is Saturday
+}
+
+// Function to format date as YYYY-MM-DD
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+// Initialize the date input
+window.addEventListener('load', function() {
+    const dateInput = document.getElementById('attendance_date');
+    const minDate = new Date(dateInput.min);
+    const maxDate = new Date(dateInput.max);
+    
+    // Disable weekends in the date range
+    let current = new Date(minDate);
+    while (current <= maxDate) {
+        if (isWeekend(current)) {
+            const dateStr = formatDate(current);
+            // Add these dates to a list of disabled dates
+            dateInput.addEventListener('mouseenter', function(e) {
+                if (e.target.value === dateStr) {
+                    e.target.classList.add('weekend');
+                }
+            });
+        }
+        current.setDate(current.getDate() + 1);
+    }
+});
+
+// Update the validateDate function
+function validateDate(dateStr) {
+    const selectedDate = new Date(dateStr);
+    const today = new Date();
+    
+    // Set today to end of day to allow selecting today's date
+    today.setHours(23, 59, 59, 999);
+    
+    // Reset the time part of selected date for proper comparison
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    // Create minimum date from Django template variable
+    const minDate = new Date('{{ min_date|date:"Y-m-d" }}');
+    
+    if (isWeekend(selectedDate)) {
+        return {
+            valid: false,
+            message: 'Weekends are not available for attendance marking'
+        };
+    }
+    
+    if (selectedDate > today) {
+        return {
+            valid: false,
+            message: 'Cannot mark attendance for future dates'
+        };
+    }
+    
+    if (selectedDate < minDate) {
+        return {
+            valid: false,
+            message: 'Cannot mark attendance before the minimum allowed date'
+        };
+    }
+    
+    return {
+        valid: true
+    };
+}
+
+// Replace the existing date change event listener with this:
+document.getElementById('attendance_date').addEventListener('change', function() {
+    const validation = validateDate(this.value);
+    
+    if (!validation.valid) {
+        alert(validation.message);
+        this.value = '{{ selected_date|date:"Y-m-d" }}';  // Reset to current selected date
+        return;
+    }
+    
+    // Use loadAttendanceForDate instead of page reload
+    loadAttendanceForDate(this.value);
+});
+
+// Update the form validation function
+function validateForm() {
+    const dateInput = document.getElementById('attendance_date');
+    const date = dateInput.value;
+    
+    if (!date) {
+        alert('Please select a date first');
+        dateInput.focus();
+        return false;
+    }
+    
+    const validation = validateDate(date);
+    if (!validation.valid) {
+        alert(validation.message);
+        dateInput.focus();
+        return false;
+    }
+
+    let allMarked = true;
+    const staffInputs = document.querySelectorAll('input[id^="status_input_"]');
+    
+    staffInputs.forEach(input => {
+        const hasLeave = input.dataset.hasLeave === 'True';
+        
+        // If staff has leave, ensure they're marked as absent
+        if (hasLeave && input.value !== 'absent') {
+            input.value = 'absent';
+        }
+        
+        // Check if non-leave staff are marked
+        if (!hasLeave && !input.value) {
+            const staffRow = input.closest('tr');
+            const staffName = staffRow.querySelector('td:nth-child(2)').textContent.trim();
+            alert('Please mark attendance for ' + staffName);
+            allMarked = false;
+            staffRow.style.backgroundColor = '#fff3cd';
+        }
+    });
+
+    return allMarked;
+}
+
+function markAttendance(button, status, staffId) {
+    try {
+        const input = document.getElementById(`status_input_${staffId}`);
+        const hasLeave = input.dataset.hasLeave === 'True';
+        
+        // Prevent marking attendance if staff has approved leave
+        if (hasLeave) {
+            alert('Cannot modify attendance for staff on approved leave');
+            return;
+        }
+        
+        // Get the button group
+        const btnGroup = button.closest('.btn-group');
+        
+        // Remove active class from all buttons in the group
+        btnGroup.querySelectorAll('.btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Update hidden input value
+        input.value = status.toLowerCase();
+        
+        // Update status text
+        const statusText = document.getElementById(`status_text_${staffId}`);
+        if (status === 'present') {
+            statusText.innerHTML = '<small class="text-success"><i class="fas fa-check-circle status-icon"></i>Marked Present</small>';
+        } else {
+            statusText.innerHTML = '<small class="text-danger"><i class="fas fa-times-circle status-icon"></i>Marked Absent</small>';
+        }
+        
+        // Remove highlight from the row if it was previously unmarked
+        button.closest('tr').style.backgroundColor = '';
+    } catch (error) {
+        console.error('Error marking attendance:', error);
+    }
+}
+
+// Update the loadAttendanceForDate function
+function loadAttendanceForDate(date) {
+    // Show loading overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    `;
+    overlay.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><br>Loading attendance data...</div>';
+    document.body.appendChild(overlay);
+
+    // Update the date input value
+    document.getElementById('attendance_date').value = date;
+
+    // Fetch attendance data via AJAX
+    fetch(`${window.location.pathname}?attendance_date=${date}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data || !data.attendance_records || !data.leave_status) {
+            throw new Error('Invalid data received');
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        const editBtn = document.getElementById('editBtn');
+        
+        // Check if attendance exists for this date
+        const hasAttendance = Object.keys(data.attendance_records).length > 0;
+        
+        // Update attendance status for each staff member
+        document.querySelectorAll('.btn-group').forEach(group => {
+            const staffId = group.querySelector('input[type="hidden"]').name.split('_')[1];
+            const input = document.getElementById(`status_input_${staffId}`);
+            const hasLeave = data.leave_status[staffId] === true;  // Get leave status from response
+            const status = data.attendance_records[staffId];
+            
+            // Update leave status in data attribute
+            input.dataset.hasLeave = hasLeave ? 'True' : 'False';
+            
+            // Reset all buttons
+            group.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+                btn.disabled = hasLeave;
+                if (hasLeave) {
+                    btn.title = "Staff is on approved leave";
+                } else {
+                    btn.removeAttribute('title');
+                }
+            });
+            
+            // Update input value and buttons
+            if (hasLeave) {
+                input.value = 'absent';
+                group.querySelector('.btn-outline-danger').classList.add('active');
+                
+                const statusText = document.getElementById(`status_text_${staffId}`);
+                statusText.innerHTML = `
+                    <small class="text-warning">
+                        <i class="fas fa-calendar-times status-icon"></i>
+                        On Approved Leave
+                        <span class="badge bg-warning text-dark">Auto-marked Absent</span>
+                    </small>`;
+            } else {
+                if (status) {
+                    input.value = status;
+                    const btn = group.querySelector(status === 'present' ? '.btn-outline-success' : '.btn-outline-danger');
+                    btn.classList.add('active');
+                    
+                    const statusText = document.getElementById(`status_text_${staffId}`);
+                    if (status === 'present') {
+                        statusText.innerHTML = '<small class="text-success"><i class="fas fa-check-circle status-icon"></i>Marked Present</small>';
+                    } else {
+                        statusText.innerHTML = '<small class="text-danger"><i class="fas fa-times-circle status-icon"></i>Marked Absent</small>';
+                    }
+                } else {
+                    input.value = '';
+                    const statusText = document.getElementById(`status_text_${staffId}`);
+                    statusText.innerHTML = '<small class="text-muted">Not marked</small>';
+                }
+            }
+        });
+
+        // Show/hide appropriate buttons
+        submitBtn.style.display = !hasAttendance ? 'inline-block' : 'none';
+        editBtn.style.display = hasAttendance ? 'inline-block' : 'none';
+
+        // Update URL without reloading
+        window.history.pushState({}, '', `${window.location.pathname}?attendance_date=${date}`);
+    })
+    .catch(error => {
+        console.error('Error loading attendance:', error);
+        alert('Error loading attendance data. Please try again.');
+    })
+    .finally(() => {
+        overlay.remove();
+    });
+}
+
+// Update the edit button event listener
+document.getElementById('editBtn').addEventListener('click', function() {
+    // Enable only attendance buttons for staff without approved leave
+    document.querySelectorAll('.btn-group').forEach(group => {
+        const input = group.querySelector('input[type="hidden"]');
+        const hasLeave = input.dataset.hasLeave === 'True';
+        
+        // Only enable buttons if staff doesn't have approved leave
+        group.querySelectorAll('button').forEach(btn => {
+            btn.disabled = hasLeave;
+        });
+    });
+    
+    // Show submit button and hide edit button
+    document.getElementById('submitBtn').style.display = 'inline-block';
+    this.style.display = 'none';
+    
+    // Add a notice that attendance is being edited
+    const cardHeader = document.querySelector('.card-header');
+    let editNotice = document.querySelector('.edit-notice');
+    if (!editNotice) {
+        editNotice = document.createElement('div');
+        editNotice.className = 'alert alert-warning edit-notice mt-2';
+        editNotice.innerHTML = '<i class="fas fa-edit"></i> You are now editing the attendance for this date. Staff on approved leave will remain marked as absent.';
+        cardHeader.insertAdjacentElement('afterend', editNotice);
+    }
+});
+
+// Update the updateStatusMessage function
+function updateStatusMessage(selectedDate, records) {
+    const cardHeader = document.querySelector('.card-header');
+    let existingStatus = document.querySelector('.alert:not(.edit-notice):not(.closure-notice)');
+    if (existingStatus) {
+        existingStatus.remove();
+    }
+
+    const statusDiv = document.createElement('div');
+    const recordCount = Object.keys(records).length;
+    const totalStaff = parseInt('{{ staff_list|length }}');
+
+    if (recordCount > 0) {
+        statusDiv.className = 'alert alert-info mt-2';
+        let message = `
+            <i class="fas fa-info-circle"></i> 
+            Showing attendance for ${new Date(selectedDate).toLocaleDateString()}. 
+            ${recordCount} out of ${totalStaff} staff members marked.
+        `;
+        
+        statusDiv.innerHTML = message;
+    } else {
+        statusDiv.className = 'alert alert-warning mt-2';
+        statusDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i> 
+            No attendance records found for ${new Date(selectedDate).toLocaleDateString()}
+        `;
+    }
+    cardHeader.insertAdjacentElement('afterend', statusDiv);
+}
+
+// Add visual feedback when hovering over dates
+document.getElementById('attendance_date').addEventListener('mouseover', function(e) {
+    const date = new Date(e.target.value);
+    if (isWeekend(date)) {
+        e.target.classList.add('weekend');
+        e.target.title = 'Weekends are not available for attendance marking';
+    }
+});
+</script>
+{% endblock %} 

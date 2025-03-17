@@ -1,0 +1,132 @@
+{% extends 'master/header.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container-fluid dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">Student Registration Blockchain</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/home" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Blockchain View</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h5 class="card-header">Registration Records</h5>
+                <div class="card-body">
+                    {% if total_blocks == 0 %}
+                        <div class="alert alert-info">
+                            No student registration records found in the blockchain.
+                        </div>
+                    {% else %}
+                        {% for block in blocks %}
+                        {% if block.index != 0 %}  <!-- Skip genesis block -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Block #{{ block.index }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary">Student Information</h6>
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th>Student ID</th>
+                                                <td>{{ block.data.student_id }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Name</th>
+                                                <td>{{ block.data.name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Email</th>
+                                                <td>{{ block.data.email }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Contact</th>
+                                                <td>{{ block.data.contact }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Address</th>
+                                                <td>{{ block.data.address }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Standard</th>
+                                                <td>{{ block.data.standard }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Educational Level</th>
+                                                <td>{{ block.data.educational_level }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Gender</th>
+                                                <td>{{ block.data.gender }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Username</th>
+                                                <td>{{ block.data.username }}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary">Block Information</h6>
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th>Block Hash</th>
+                                                <td><small class="text-muted">{{ block.hash }}</small></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Previous Hash</th>
+                                                <td><small class="text-muted">{{ block.previous_hash }}</small></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Timestamp</th>
+                                                <td>{{ block.data.registration_time }}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        <div class="text-muted mt-3">
+                            Total Records: {{ total_blocks }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .card-header.bg-primary {
+        background-color: #4e73df !important;
+    }
+    .table th {
+        width: 30%;
+        background-color: #f8f9fc;
+    }
+    .text-muted {
+        word-break: break-all;
+    }
+    .hash-cell {
+        font-family: monospace;
+        font-size: 0.8em;
+    }
+</style>
+{% endblock %}
+
+{% endblock content %} 

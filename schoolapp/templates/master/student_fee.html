@@ -1,135 +1,180 @@
 {% extends 'master/header.html' %}
 {% block content %}
 {% load static %}
+{% load custom_filters %}
 
-<div class="container-fluid  dashboard-content">
+{% if not 'master' in request.session %}
+    <script>
+        window.location.href = "{% url 'login' %}";
+    </script>
+{% else %}
+
+<div class="container-fluid dashboard-content">
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="page-header">
-                <h3 class="mb-2">Student fee</h3>
+                <h3 class="mb-2">Student Fee Management</h3>
                 <div class="page-breadcrumb">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Student fee</li>
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'master_home' %}" class="breadcrumb-link">Dashboard</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Student Fee</li>
                         </ol>
                     </nav>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="row">
-        <!-- ============================================================== -->
-        <!-- basic form -->
-        <!-- ============================================================== -->
-        
+        <!-- Fee Structure Display -->
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             {% if data %}
-            <div class="card">
-                <h5 class="card-header">School finance</h5>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Account category</th>
-                                <th>EL</th>
-                                <th>Fee type</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for i in data %}
-                            <tr>
-                                <td>{{forloop.counter}}</td>
-                                <td>{{i.account_category}}</td>
-                                <td>{{i.educational_level.level}}</td>
-                                <td>{{i.fee_type}}</td>
-                                <td>{{i.amount}}</td>
-                            </tr>
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list-alt mr-2"></i>Fee Structure Overview
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="accordion" id="feeAccordion">
+                            {% regroup data by educational_level as level_list %}
+                            {% for level in level_list %}
+                                <div class="card mb-0 border-0">
+                                    <div class="card-header bg-light" id="heading{{ level.grouper.el_id }}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">
+                                                <button class="btn btn-link text-dark" type="button" 
+                                                        data-toggle="collapse" 
+                                                        data-target="#collapse{{ level.grouper.el_id }}">
+                                                    <i class="fas fa-graduation-cap mr-2"></i>
+                                                    {{ level.grouper.level }}
+                                                </button>
+                                            </h6>
+                                            <span class="badge badge-primary">
+                                                Total Fees: ₹{{ level_totals|get_item:level.grouper.el_id|default:"0" }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div id="collapse{{ level.grouper.el_id }}" 
+                                         class="collapse {% if level.grouper.el_id == last_added_level %}show{% endif %}" 
+                                         data-parent="#feeAccordion">
+                                        <div class="card-body p-0">
+                                            <!-- Term-wise tabs -->
+                                            <ul class="nav nav-tabs" role="tablist">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" data-toggle="tab" 
+                                                       href="#term1-{{ level.grouper.el_id }}">First Term</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" data-toggle="tab" 
+                                                       href="#term2-{{ level.grouper.el_id }}">Second Term</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" data-toggle="tab" 
+                                                       href="#term3-{{ level.grouper.el_id }}">Third Term</a>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Tab content -->
+                                            <div class="tab-content">
+                                                {% for term_number in '123' %}
+                                                    <div id="term{{ term_number }}-{{ level.grouper.el_id }}" 
+                                                         class="tab-pane fade {% if term_number == '1' %}show active{% endif %}">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-hover mb-0">
+                                                                <thead class="bg-light">
+                                                                    <tr>
+                                                                        <th>#</th>
+                                                                        <th>Fee Type</th>
+                                                                        <th>Amount</th>
+                                                                        <th>Status</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for fee in level.list %}
+                                                                        {% if fee.term == term_number %}
+                                                                            <tr>
+                                                                                <td>{{ forloop.counter }}</td>
+                                                                                <td>{{ fee.fee_type }}</td>
+                                                                                <td>₹{{ fee.amount }}</td>
+                                                                                <td>
+                                                                                    {% if fee.status %}
+                                                                                        <span class="badge badge-success">Active</span>
+                                                                                    {% else %}
+                                                                                        <span class="badge badge-danger">Inactive</span>
+                                                                                    {% endif %}
+                                                                                </td>
+                                                                            </tr>
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            No fee structures defined yet.
+                        </div>
+                    </div>
+                </div>
             {% endif %}
-        </div>       
+        </div>
     </div>
 </div>
-  
-<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
-<script src="{% static 'Validation/jquery_validate.js' %}"></script>
-<script src="{% static 'Validation/additional_validate.js' %}"></script>
 
+{% block extra_css %}
+<style>
+    .badge {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    .badge-success {
+        background-color: #28a745;
+    }
+    .badge-danger {
+        background-color: #dc3545;
+    }
+    .card-header .btn-link {
+        text-decoration: none;
+        padding: 0;
+    }
+    .card-header .btn-link:hover {
+        text-decoration: none;
+    }
+    .badge {
+        font-size: 85%;
+        padding: 0.5em 0.8em;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    (function ($, W, D)
-    {
-    var JQUERY4U = {};
-    JQUERY4U.UTIL =
-    {
-    setupFormValidation: function ()
-    {
-    $.validator.addMethod(
-    "regex",
-    function(value, element, regexp) {
-    var check = false;
-    return this.optional(element) || regexp.test(value);
-    },
-    "Not a valid Input."
-    );
-    
-    //form validation rules
-    $("#myform").validate({
-    ignore: [],
-    rules: {
-                
-        level: {
-                        required: true,
-                    },
-
-                    fee_type: {
-                        required: true,
-                        remote: {
-                            url: '/check_student_fee_exist/',
-                            type: 'GET',
-                            data: {
-                                educational_level_id: function () {
-                                    return $("#educational_level_id").val();
-                                },
-                                fee_type: function () {
-                                    return $("#fee_type").val();
-                                },
-                                
-                            },
-                            dataFilter: function (data) {
-                                var json = JSON.parse(data);
-                                if (json.exists) {
-                                    return false; 
-                                } else {
-                                    return true; 
-                                }
-                            }
-                        }
-                    },
-              },
-              messages: {
-                fee_type: {
-                        required: "Fee type is required.",
-                        remote: "Fee type already exists for this education level."
-                    },
-    },
-    submitHandler: function (form) {
-    form.submit();
-    }
+// Auto-hide alerts after 5 seconds
+window.setTimeout(function() {
+    $(".alert").fadeTo(500, 0).slideUp(500, function() {
+        $(this).remove();
     });
-    }
-    }
-    //when the dom has loaded setup form validation rules
-    $(D).ready(function ($) {
-    JQUERY4U.UTIL.setupFormValidation();
-    });
-    })(jQuery, window, document);
-    </script>
+}, 5000);
+</script>
+{% endblock %}
 
+{% endif %}
 {% endblock content %}
 

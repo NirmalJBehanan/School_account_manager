@@ -2,11 +2,11 @@
 {% block content %}
 {% load static %}
 
-<div class="container-fluid  dashboard-content">
+<div class="container-fluid dashboard-content">
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="page-header">
-                <h3 class="mb-2">Staff Salary</h3>
+                <h3 class="mb-2">{{ title }}</h3>
                 <div class="page-breadcrumb">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
@@ -18,104 +18,140 @@
             </div>
         </div>
     </div>
+
     <div class="row">
-        <!-- ============================================================== -->
-        <!-- basic form -->
-        <!-- ============================================================== -->
-        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 m-auto">
-            <div class="row">
-                <div class="col-9">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <h6 class="alert alert-success">{{message}}</h6>       
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                
-                {% if ay %}
-                    <div class="col-3">
-                        <input type="month" class="form-control" id="chdate">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% if ay %}
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <h5 class="card-title mb-0">Staff Salary Management</h5>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="month" class="form-control" id="chdate">
+                            </div>
+                        </div>
                     </div>
-                {% else %}
-                    <div class="alert alert-danger">Current Academic Year Not Matching Current Year, Add or Update Current Academic Year</div>
-                {% endif %}
-                <div class="col-12 mt-4" id="tb"></div>
-            </div>           
+                    <div class="card-body">
+                        <div id="tb"></div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    Please set up the current academic year first.
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
-  
-
 
 <script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
-<script src="{% static 'Validation/jquery_validate.js' %}"></script>
-<script src="{% static 'Validation/additional_validate.js' %}"></script>
-
 <script>
     $(function(){
-        var ay = JSON.parse('{{ json_data|safe }}');
-        
-        if (typeof ay === 'string') {
-            var m = ay.split('-');
-
-            var minDate = m[0] + '-01';
-            var maxDate = m[1] + '-12';
-            $('#chdate').attr('max', maxDate);
-            $('#chdate').attr('min', minDate);
-        } else {
-            console.error('Expected ay to be a string, but got:', ay);
+        if ('{{ json_data }}') {
+            try {
+                var ay = JSON.parse('{{ json_data|safe }}');
+                if (typeof ay === 'string') {
+                    var m = ay.split('-');
+                    var minDate = m[0] + '-06';  // June of start year
+                    var maxDate = m[1] + '-05';  // May of end year
+                    $('#chdate').attr('max', maxDate);
+                    $('#chdate').attr('min', minDate);
+                    console.log('Date range set:', {min: minDate, max: maxDate});
+                }
+            } catch (e) {
+                console.error('Error parsing academic year:', e);
+            }
         }
     });
-</script>
 
-<script>
-    $(document).on("change", "#chdate", function () {
-            var chdate = $(this).val();
-
-            $.ajax({
-            url: '/search_staff_salary/',
-            data: { 
-                'chdate': chdate,
-            },
-            success: function (data) {
-                $("#tb").html(data);
+    $(document).ready(function() {
+        // Add CSRF token to all AJAX requests
+        $.ajaxSetup({
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
             }
+        });
+
+        // Date change handler
+        $('#chdate').change(function() {
+            var chdate = $(this).val();
+            console.log('Selected date:', chdate);
+            
+            $.ajax({
+                url: '/search_staff_salary/',
+                data: { 'chdate': chdate },
+                success: function(data) {
+                    $("#tb").html(data);
+                    console.log('Data loaded successfully');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ajax error:', error);
+                    $("#tb").html('<div class="alert alert-danger">Error loading data</div>');
+                }
             });
         });
-</script>
 
-<!-- <script>
-    $(document).ready(function () {
-        $("#academic_year_id").change(function () {
-            var ay = $('#academic_year_id option:selected').html();
-            var m = ay.split('-');
-
-            var minDate = m[0] + '-01';
-            var maxDate = m[1] + '-12';
-
-            var txt = '<input type="month" min="' + minDate + '" max="' + maxDate + '" class="form-control" id="chdate">';
-            $("#mo").html(txt);
-            $("#tb").html('');
-        });
-
-        // Use event delegation to bind the change event to dynamically added input#chdate
-        $(document).on("change", "#chdate", function () {
-            var chdate = $(this).val();
-            var ay_id = $('#academic_year_id').val();
-
-            $.ajax({
-            url: '/search_staff_salary/',
-            data: { 
-                'chdate': chdate,
-                'ay_id':ay_id
-            },
-            success: function (data) {
-                $("#tb").html(data);
+        // Process salary handler - use event delegation since buttons are loaded dynamically
+        $(document).on('click', '.process-salary', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var staffId = $btn.data('staff-id');
+            var salaryData = $btn.data('salary');
+            
+            // Get the date from input
+            var dateInput = $('#chdate').val(); // Format: "2025-02"
+            var [year, month] = dateInput.split('-');
+            var date = new Date(year, parseInt(month) - 1); // month is 0-based in JS
+            var monthYear = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+            
+            if (!confirm(`Are you sure you want to process salary for ${salaryData.staff_name} (${monthYear})?`)) {
+                return;
             }
+            
+            $btn.prop('disabled', true)
+                .html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+            
+            $.ajax({
+                url: "{% url 'salary_transaction' %}",
+                type: 'POST',
+                data: {
+                    'staff_id': staffId,
+                    'salary_date': monthYear,
+                    'deductions': salaryData.absence_deduction || 0
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Salary processed successfully!');
+                        // Refresh the table
+                        $('#chdate').trigger('change');
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    var errorMessage = 'An error occurred';
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        errorMessage = response.message || errorMessage;
+                    } catch(e) {
+                        console.error('Error parsing response:', e);
+                    }
+                    alert('Error: ' + errorMessage);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Process Salary');
+                }
             });
         });
-});
-
-</script> -->
+    });
+</script>
 {% endblock content %}
 

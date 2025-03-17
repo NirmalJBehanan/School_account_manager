@@ -30,71 +30,94 @@
         h3 {
             text-align: center;
         }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; }
+        .table th { background-color: #f5f5f5; }
+        .text-right { text-align: right; }
+        .total-row { font-weight: bold; background-color: #f0f0f0; }
+        .section { margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <h3>SCHOOL ACCOUNTS MANAGEMENT</h3>
-    <div class="card w-100">
-        <h5 class="card-header">School Transactions</h5>
-        <div class="card-body">
-            <table class="table table-bordered mb-4">
-                <thead>
-                <tr><th colspan="3">Incomes :</th></tr>
-                <tr>
-                    <th>ID</th>
-                    <th>Finance Type</th>
-                    <th>Total</th>
-                </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Student fee</td>
-                        <td>{{ student.fee }}</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>School Finance Income</td>
-                        <td>{{ school_income.sf_income }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <table class="table table-bordered mb-4">
-                <thead>
-                <tr><th colspan="3">Expense :</th></tr>
-                <tr>
-                    <th>ID</th>
-                    <th>Finance Type</th>
-                    <th>Total</th>
-                </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Staff salary</td>
-                        <td>{{ staff.salary }}</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>School Finance expense</td>
-                        <td>{{ school_expense.sf_expense }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <table class="table table-bordered">
-                <thead>
-                    <tr><th colspan="2">Total :</th></tr>
-                    <tr>
-                        <th>Total Income</th>
-                        <td>{{ total_income }}</td>
-                    </tr>
-                    <tr>
-                        <th>Total Expense</th>
-                        <td>{{ total_expense }}</td>
-                    </tr>
-                </thead>
-            </table>
-        </div>
+    <div class="header">
+        <h2>SCHOOL ACCOUNTS MANAGEMENT</h2>
+        <h3>Financial Transaction Report</h3>
+        {% if academic_year %}
+            <p>Academic Year: {{ academic_year.academic_year }}</p>
+        {% endif %}
+        {% if date_range.start_month %}
+            <p>Period: 
+            {% if date_range.end_month %}
+                Month {{ date_range.start_month }} to {{ date_range.end_month }}
+            {% else %}
+                Month {{ date_range.start_month }}
+            {% endif %}
+            </p>
+        {% endif %}
     </div>
-    </body>
+
+    <div class="section">
+        <h4>Income Statement</h4>
+        <table class="table">
+            <tr>
+                <th>Category</th>
+                <th class="text-right">Amount (₹)</th>
+            </tr>
+            <tr>
+                <td>Student Fees</td>
+                <td class="text-right">{{ income.student_fees|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Other Income</td>
+                <td class="text-right">{{ income.other_income|floatformat:2 }}</td>
+            </tr>
+            <tr class="total-row">
+                <td>Total Income</td>
+                <td class="text-right">{{ income.total|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h4>Expense Statement</h4>
+        <table class="table">
+            <tr>
+                <th>Category</th>
+                <th class="text-right">Amount (₹)</th>
+            </tr>
+            <tr>
+                <td>Staff Salaries</td>
+                <td class="text-right">{{ expense.staff_salaries|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Other Expenses</td>
+                <td class="text-right">{{ expense.other_expense|floatformat:2 }}</td>
+            </tr>
+            <tr class="total-row">
+                <td>Total Expenses</td>
+                <td class="text-right">{{ expense.total|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h4>Summary</h4>
+        <table class="table">
+            <tr>
+                <th>Total Income</th>
+                <td class="text-right">{{ income.total|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <th>Total Expenses</th>
+                <td class="text-right">{{ expense.total|floatformat:2 }}</td>
+            </tr>
+            <tr class="total-row">
+                <th>Net Balance</th>
+                <td class="text-right">{{ net_balance|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+</body>
 </html>

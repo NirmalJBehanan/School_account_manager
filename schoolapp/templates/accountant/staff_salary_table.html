@@ -1,0 +1,82 @@
+<div class="table-responsive">
+    <h4 class="mb-3">Salary Details for {{ month_year }}</h4>
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Salary Calculation:
+        <ul>
+            <li>Working days exclude weekends (Saturday and Sunday)</li>
+            <li>Approved leaves are not counted as absences</li>
+            <li>Deductions are calculated only for unauthorized absences</li>
+        </ul>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Staff Name</th>
+                <th>Designation</th>
+                <th>Monthly Salary Components</th>
+                <th>Attendance Details</th>
+                <th>Deductions</th>
+                <th>Final Salary</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in salary_data %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.staff.name }}</td>
+                <td>{{ item.staff.designation.designation_name }}</td>
+                <td>
+                    <small>
+                        Basic Pay: ₹{{ item.salary_components.basic_pay|floatformat:2 }}<br>
+                        DA ({{ item.salary_components.da }}%): ₹{{ item.salary_components.da_amount|floatformat:2 }}<br>
+                        HRA ({{ item.salary_components.hra }}%): ₹{{ item.salary_components.hra_amount|floatformat:2 }}<br>
+                        TA ({{ item.salary_components.ta }}%): ₹{{ item.salary_components.ta_amount|floatformat:2 }}<br>
+                        AGP ({{ item.salary_components.agp }}%): ₹{{ item.salary_components.agp_amount|floatformat:2 }}<br>
+                        <strong>Monthly Total: ₹{{ item.monthly_salary|floatformat:2 }}</strong>
+                    </small>
+                </td>
+                <td>
+                    Working Days: {{ item.working_days }}<br>
+                    <small class="text-muted">
+                        (₹{{ item.per_day_salary|floatformat:2 }}/day)
+                    </small><br>
+                    {% if item.total_absences > 0 %}
+                        <span class="badge badge-warning">{{ item.total_absences }} Total Absences</span><br>
+                    {% endif %}
+                    {% if item.approved_leaves > 0 %}
+                        <span class="badge badge-info">{{ item.approved_leaves }} Approved Leaves</span><br>
+                    {% endif %}
+                    {% if item.actual_absences > 0 %}
+                        <span class="badge badge-danger">{{ item.actual_absences }} Unauthorized Absences</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.absence_deduction > 0 %}
+                        <span class="text-danger">
+                            -₹{{ item.absence_deduction|floatformat:2 }}
+                            <br>
+                            <small>({{ item.actual_absences }} days × ₹{{ item.per_day_salary|floatformat:2 }})</small>
+                        </span>
+                    {% else %}
+                        <span class="text-success">No deductions</span>
+                    {% endif %}
+                </td>
+                <td>₹{{ item.final_salary|floatformat:2 }}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm process-salary" 
+                            data-staff-id="{{ item.staff.sr_id }}"
+                            data-salary='{
+                                "absence_deduction": {{ item.absence_deduction }},
+                                "final_salary": {{ item.final_salary }},
+                                "staff_name": "{{ item.staff.name }}"
+                            }'>
+                        Process Salary
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div> 

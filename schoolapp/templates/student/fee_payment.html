@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <h1 class="white">Contact Us</h1>
+                <h1 class="white">Fee Payment Details</h1>
             </div> 
         </div> 
     </div> 
@@ -17,49 +17,105 @@
 
 <div id="description" class="basic-2">
     <div class="container">
-        <h2>Fees</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
 
         {% if data == 'Not exist' %}
-            <div class="alert alert-success">You have not any pending payments</div>
-        {% elif data %}
-        <h4>{{ fee.fee_type }}</h4>
-        <h5>Amount : {{ fee.amount }}</h5>
-        <table class="table table-bordered">
-            <tr>
-                <th>#</th>
-                <th>Month</th>
-                <th>Status</th>
-                <th>Total</th>
-                <th>#</th>
-            </tr>
-            
-            {% for i in data %}
-                <tr>
-                    <td>{{forloop.counter}}</td>
-                    <td>{{ i.month }}-{{ i.year }}</td>
-                    <td>
-                        {% if i.status == True %}
-                            <div class="badge badge-success">Paid</div>
-                        {% else %}
-                            <div class="badge badge-danger">Not Paid</div>
-                            
-                            {% if i.fine %}
-                                Fine {{ i.fine }}
-                            {% endif %}
-                                
-                        {% endif %}
-                    </td>
-                    <td>{{ i.total }}</td>
-                    <td><a href="{% url 'payment' %}?ay_id={{ ay.ay_id }}&mo={{ i.month }}&ye={{ i.year }}&sf_id={{ sf_id }}" class="btn btn-sm btn-primary">PAY NOW</a></td>
-                </tr>
-            {% endfor %}
-                
-        </table>
+            <div class="alert alert-success">You have no pending payments</div>
+        {% elif data and ay %}
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ fee.fee_type }} - Monthly Fee Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <p><strong>Fee Type:</strong> {{ fee.fee_type }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Monthly Amount:</strong> ₹{{ fee.amount }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Academic Year:</strong> {{ ay.academic_year }}</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Month</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                    <th>Fine</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in data %}
+                                    <tr {% if not i.status %}class="table-warning"{% endif %}>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ i.month|date:"F" }} {{ i.year }}</td>
+                                        <td>
+                                            {% if i.status %}
+                                                <span class="badge badge-success">Paid</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-right">₹{{ fee.amount }}</td>
+                                        <td class="text-right">
+                                            {% if i.fine %}
+                                                <span class="text-danger">₹{{ i.fine }}</span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-right">₹{{ i.total|add:i.fine }}</td>
+                                        <td>
+                                            {% if not i.status %}
+                                                <a href="{% url 'payment' %}?sf_id={{ sf_id }}&mo={{ i.month }}&ye={{ i.year }}" 
+                                                   class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-credit-card"></i> Pay Now
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         {% else %}
-            <div class="alert alert-danger">Academic Year Not Found</div>
+            <div class="alert alert-danger">Academic Year Not Found. Please contact administrator.</div>
         {% endif %}
     </div> 
 </div>
 
+<style>
+.table td, .table th {
+    vertical-align: middle !important;
+    padding: 0.75rem !important;
+}
+.badge {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+.text-right {
+    text-align: right !important;
+}
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+}
+.table-warning {
+    background-color: #fff3cd !important;
+}
+</style>
 
 {% endblock content %}

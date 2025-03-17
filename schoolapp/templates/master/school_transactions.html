@@ -69,17 +69,15 @@
             </div>
 
             <div class="col-12" id="tb">
-
+                <!-- Transaction data will be loaded here -->
             </div>
         </div>
     </div>
 </div>
 
-
 <script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
 <script src="{% static 'Validation/jquery_validate.js' %}"></script>
 <script src="{% static 'Validation/additional_validate.js' %}"></script>
-
 
 <script>
     $(document).ready(function () {
@@ -95,13 +93,28 @@
                     'sm': sm,
                     'em': em,
                 },
-                success: function (data) {
-                    $("#tb").html(data);
+                success: function (response) {
+                    $("#tb").html(response);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching transactions:", error);
+                    $("#tb").html("<p class='text-danger'>Error loading data. Please try again.</p>");
                 }
             });
         }
 
-        $("#ay_id, #sm, #em").change(handleInputChange);
+        $("#ay_id, #sm, #em").change(function() {
+            if ($("#ay_id").val()) {
+                handleInputChange();
+            } else {
+                $("#tb").html("");
+            }
+        });
+        
+        // Trigger on page load if academic year is selected
+        if ($("#ay_id").val()) {
+            handleInputChange();
+        }
     });
 </script>
 

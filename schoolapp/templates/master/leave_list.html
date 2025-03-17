@@ -2,16 +2,16 @@
 {% block content %}
 {% load static %}
 
-<div class="container-fluid  dashboard-content">
+<div class="container-fluid dashboard-content">
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="page-header">
-                <h3 class="mb-2">My Leave Request</h3>
+                <h3 class="mb-2">Leave Request History</h3>
                 <div class="page-breadcrumb">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">My Leave Request</li>
+                            <li class="breadcrumb-item active" aria-current="page">Leave Request History</li>
                         </ol>
                     </nav>
                 </div>
@@ -20,66 +20,69 @@
     </div>
     <div class="row">
         {% if messages %}
-                {% for message in messages %}
-                <h6 class="alert alert-success">{{message}}</h6>       
-                {% endfor %}
-            {% endif %}
+            {% for message in messages %}
+                <div class="col-12">
+                    <div class="alert alert-success">{{message}}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             {% if data %}
             <div class="card">
-                <h5 class="card-header">My Leave Request</h5>
+                <h5 class="card-header">Leave Request History</h5>
                 <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th colspan="2">Staff</th>
-                            <th>Leave type</th>
-                            <th>Reason</th>
-                            <th>Leave date</th>
-                            <th>Request Date</th>
-                            <th>Status</th>
-                        </tr>
-                          </thead>
-                          <tbody>
-                            {% for i in data %}
-                            <tr>
-                                <td>{{forloop.counter}}</td>
-                                <td><img src="{{i.staff.image}}" class="rounded" style="height: 60px; width:60px;" alt=""></td>
-                                <td>
-                                    {{i.staff.name}} <br>
-                                    Email : {{i.staff.email}} <br>
-                                    Contact number : {{i.staff.contact_number}}
-                                </td>
-                                <td>{{ i.leave_type.leave_type }}</td>
-                                <td>{{i.reason}}</td>
-                                <td>
-                                    From date {{ i.start_date }} <br>
-                                    To date {{ i.end_date }}
-                                </td>
-                                <td>{{i.created_at}}</td>
-                                <td>
-                                    {% if i.status == None %}
-                                        <div class="badge badge-warning">Pending</div>
-                                    {% elif i.status == 'Approved' %}
-                                        <div class="badge badge-success">{{i.status}}</div>
-                                    {% else %}
-                                        <div class="badge badge-danger">{{i.status}}</div>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th colspan="2">Staff</th>
+                                    <th>Leave type</th>
+                                    <th>Reason</th>
+                                    <th>Leave date</th>
+                                    <th>Request Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in data %}
+                                <tr>
+                                    <td>{{forloop.counter}}</td>
+                                    <td><img src="{{i.staff.image}}" class="rounded" style="height: 60px; width:60px;" alt=""></td>
+                                    <td>
+                                        {{i.staff.name}} <br>
+                                        Email: {{i.staff.email}} <br>
+                                        Contact: {{i.staff.contact_number}}
+                                    </td>
+                                    <td>{{i.leave_type.leave_type}}</td>
+                                    <td>{{i.reason}}</td>
+                                    <td>
+                                        From: {{i.start_date}} <br>
+                                        To: {{i.end_date}} <br>
+                                        Days: {{i.no_of_days}}
+                                    </td>
+                                    <td>{{i.created_at|date:"d-m-Y"}}</td>
+                                    <td>
+                                        {% if i.status == 'Approved' %}
+                                            <div class="badge badge-success">{{i.status}}</div>
+                                        {% elif i.status == 'Rejected' %}
+                                            <div class="badge badge-danger">{{i.status}}</div>
+                                        {% else %}
+                                            <div class="badge badge-warning">Pending</div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             {% else %}
-            <h4>Not found any list</h4>
+            <div class="alert alert-info">No leave requests found</div>
             {% endif %}
         </div>
-        
     </div>
 </div>
-
 {% endblock content %}
 

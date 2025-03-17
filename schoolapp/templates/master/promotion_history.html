@@ -1,0 +1,52 @@
+{% extends 'master/header.html' %}
+{% block content %}
+
+<div class="container-fluid dashboard-content">
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h2 class="pageheader-title">Student Promotion History</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Promotion Records</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>From Standard</th>
+                                    <th>To Standard</th>
+                                    <th>Academic Year</th>
+                                    <th>Promotion Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for promotion in promotions %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ promotion.student.name }}</td>
+                                    <td>{{ promotion.from_standard.standard }}</td>
+                                    <td>{{ promotion.to_standard.standard }}</td>
+                                    <td>{{ promotion.academic_year.academic_year }}</td>
+                                    <td>{{ promotion.promotion_date|date:"d M Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

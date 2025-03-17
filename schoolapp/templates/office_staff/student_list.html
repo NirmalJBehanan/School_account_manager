@@ -29,6 +29,19 @@
             <div class="card">
                 <h5 class="card-header">Student list</h5>
                 <div class="card-body">
+                    <div class="row mt-0 mb-2">
+                        <div class="col-9"></div>
+                        <div class="col-3">
+                            <select class="form-control form-control-sm" name="s_id" id="s_id">
+                                <option value="">Choose Standard...</option>
+                                {% if std %} 
+                                {% for i in std %}
+                                <option value="{{i.s_id}}">{{i.standard}}</option>
+                                {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
                     <table class="table table-bordered">
                         <thead>
                         <tr>
@@ -40,14 +53,14 @@
                             <th>Status</th>
                         </tr>
                           </thead>
-                          <tbody>
+                          <tbody id="tb">
                             {% for i in data %}
                             <tr>
                                 <td>{{forloop.counter}}</td>
                                 <td><img src="{{i.image}}" class="rounded" style="height: 60px; width:60px;" alt=""></td>
                                 <td>{{i.name}}</td>
                                 <td>
-                                    Email : {{i.login.username}} <br>
+                                    Email : {{i.email}} <br>
                                     Contact number : {{i.contact_number}} <br>
                                     Address : {{i.address}}
                                 </td>
@@ -77,6 +90,32 @@
         
     </div>
 </div>
+
+<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
+<script src="{% static 'Validation/jquery_validate.js' %}"></script>
+<script src="{% static 'Validation/additional_validate.js' %}"></script>
+
+<script>
+    $(document).ready(function () {
+      $("#s_id").change(function () {
+            var id = $(this).val();
+            
+            $.ajax({
+  
+                  url: '/search_student/',
+                  data: {
+                    'id': id,
+                  },
+                  
+                  success: function (data) {
+  
+                    $("#tb").html(data);
+  
+                    }
+            });
+          });
+    });
+    </script>
 
 {% endblock content %}
 

@@ -59,10 +59,10 @@
                                 </td>
                                 <td>{{i.created_at}}</td>
                                 <td>
-                                    <a href="{% url 'leave_status' %}?sl_id={{ i.sl_id }}&status=Approved" class="btn btn-xs btn-primary">Approve</a>
+                                    <a href="{% url 'admin_leave_status' %}?sl_id={{ i.sl_id }}&status=Approved" class="btn btn-xs btn-primary">Approve</a>
                                 </td>
                                 <td>
-                                    <a href="{% url 'leave_status' %}?sl_id={{ i.sl_id }}&status=Rejected" class="btn btn-xs btn-danger">Reject</a>
+                                    <a href="{% url 'admin_leave_status' %}?sl_id={{ i.sl_id }}&status=Rejected" class="btn btn-xs btn-danger">Reject</a>
                                 </td>
                             </tr>
                             {% endfor %}

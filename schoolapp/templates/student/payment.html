@@ -1,5 +1,6 @@
 {% extends 'student/header.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <header id="header" class="ex-header">
@@ -22,51 +23,73 @@
             <div class="row">
               <div class="col-12">
                 <div class="mb-3">
-                  <h3>Payment</h3>
+                  <h3>Payment Details</h3>
                 </div>
               </div>
             </div>
-            <form action="{% url 'payment' %}" id="myform" method="post">
-              {% csrf_token %}
-              <div class="row gy-3 gy-md-4 overflow-hidden">
-                <input type="hidden" name="dt" value="{{ dt }}">
-                <input type="hidden" name="sf_id" value="{{ sf.sf_id }}">
-                <div class="col-md-12">
-                    <label for="name" class="form-label">Name</label>
-                    <input type="text" class="form-control" name="name" id="name">
-                </div>
-                <div class="col-md-12">
-                    <label for="amount">Amount</label>
-                    <input type="text" readonly class="form-control" name="amount" value="{{ total }}" id="amount">
-                </div>
-                <div class="col-8">
-                    <label for="cno" class="form-label">Card Number</label>
-                    <input type="number" class="form-control" id="cno" name="cno" required>
-                </div>
-                <div class="col-4">
-                    <label for="cvv" class="form-label">Cvv</label>
-                    <input type="number" class="form-control" id="cvv" name="cvv" required>
-                </div>
-                <div class="col-12">
-                    <label for="cvv" class="form-label">Card Expire Date</label>
-                </div>
-                <div class="col-6">
-                    <select name="mon" class="form-control" required id="emon">
-                        <option value="">--Select Month--</option>
-                    </select>
-                </div>
-                <div class="col-6">
-                    <select name="" class="form-control" required id="eyear">
-                        <option value="">--Select Year--</option>
-                    </select>
-                </div>
-                <div class="col-12">
-                  <div class="d-grid">
-                    <button class="btn bsb-btn-xl btn-primary mt-2" type="submit">Pay</button>
-                  </div>
-                </div>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h5>Student Information</h5>
+                <p><strong>Name:</strong> {{ student.name }}</p>
+                <p><strong>Class:</strong> {{ student.standard.standard }}</p>
               </div>
-            </form>
+              <div class="col-md-6">
+                <h5>Fee Information</h5>
+                <p><strong>Fee Type:</strong> {{ sf.fee_type }}</p>
+                <p><strong>Due Date:</strong> {{ due_date|date:"d F Y" }}</p>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <tbody>
+                  <tr>
+                    <td>Base Fee Amount</td>
+                    <td class="text-right">₹{{ amount }}</td>
+                  </tr>
+                  {% if is_late %}
+                  <tr class="table-warning">
+                    <td>
+                      Late Payment Penalty<br>
+                      <small class="text-danger">
+                        ({{ days_late }} days × ₹10 per day)
+                      </small>
+                    </td>
+                    <td class="text-right text-danger">+ ₹{{ late_fee }}</td>
+                  </tr>
+                  {% endif %}
+                  <tr class="table-primary">
+                    <th>Total Amount to Pay</th>
+                    <th class="text-right">₹{{ total_amount }}</th>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {% if is_late %}
+            <div class="alert alert-warning mt-3">
+              <i class="fas fa-exclamation-triangle"></i>
+              <strong>Late Payment Notice:</strong><br>
+              Your payment is {{ days_late }} days overdue. A penalty of ₹10 per day has been added to your fee.
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-4">
+              <button id="rzp-button" class="btn btn-primary btn-lg">
+                <i class="fas fa-credit-card mr-2"></i>
+                Pay ₹{{ total_amount }}
+              </button>
+
+              <!-- Hidden form to handle payment response -->
+              <form name="razorpayForm" id="paymentForm" action="{% url 'payment' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+                <input type="hidden" name="razorpay_order_id" value="{{ order_id }}">
+                <input type="hidden" name="sf_id" value="{{ sf.sf_id }}">
+                <input type="hidden" name="ye" value="{{ current_date.year }}">
+                <input type="hidden" name="mo" value="{{ current_date.month }}">
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -74,107 +97,41 @@
   </div>
 </section>
 
-<script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
-<script src="{% static 'Validation/jquery_validate.js' %}"></script>
-<script src="{% static 'Validation/additional_validate.js' %}"></script>
-   
-   <script>
-       drop = document.getElementById("eyear");
-       var year = new Date().getFullYear();
-       for (var i=0;i<15;i++){{
-       var opt = document.createElement("option");
-       opt.text = year;
-       drop.add(opt);
-       year++
-       }}
-       drop2 = document.getElementById("emon");
-       for (var i=1;i<=12;i++){{
-           var mno = i.toString().padStart(2, "0");
-           var option = document.createElement("option");
-           option.text = mno;
-           drop2.add(option);
-       }}
-       </script>
-   
-   
-   <script>
-       (function ($, W, D)
-       {
-       var JQUERY4U = {};
-       JQUERY4U.UTIL =
-       {
-       setupFormValidation: function ()
-       {
-       $.validator.addMethod(
-       "regex",
-       function(value, element, regexp) {
-       var check = false;
-       return this.optional(element) || regexp.test(value);
-       },
-       "Not a valid Input."
-       );
-       $.validator.addMethod("validMonth", function(value, element) {
-           var currentDate = new Date();
-           var currentYear = currentDate.getFullYear();
-           var currentMonth = currentDate.getMonth() + 1; // Adding 1 because JavaScript months are 0-based
-       
-           var selectedYear = $("#eyear").val();
-           var selectedMonth = $("#emon").val();
-       
-           if (selectedYear > currentYear) {
-               return true; // Future year, no error
-           } else if (selectedYear == currentYear && selectedMonth >= currentMonth) {
-               return true; // Current year or future month in current year, no error
-           } else {
-               return false; // Past year or past month in current year, show error
-           }
-       }, "Card Month is Passed You Can't Pay");
-       
-       
-       
-       //form validation rules
-       $("#myform").validate({
-       ignore: [],
-       rules: {
-           
-               cno: {
-                   required: true,
-                    regex : /^[0-9]+$/,
-                    minlength: 16,
-                   maxlength: 16,
-       
-               },
-               cvv: {
-                   required: true,
-                    regex : /^[0-9]+$/,
-                    minlength: 3,
-                   maxlength: 3,
-       
-               },
-               mon:{
-                   required: true,
-                   validMonth: true,
-               },
-            
-             },
-             messages: {
-       
-               cno: "Please Enter Valid 16 digit Card Number",
-               
-               cvv: "Please Enter 3 digt Cvv",
-               
-       },
-       submitHandler: function (form) {
-       form.submit();
-       }
-       });
-       }
-       }
-       //when the dom has loaded setup form validation rules
-       $(D).ready(function ($) {
-       JQUERY4U.UTIL.setupFormValidation();
-       });
-       })(jQuery, window, document);
-       </script>  
+<!-- Include Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+// Razorpay configuration
+const options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ total_amount }}00", // Amount in paise
+    "currency": "INR",
+    "name": "School Fee Payment",
+    "description": "{{ sf.fee_type }} Payment {% if is_late %}(Including Late Fee){% endif %}",
+    "order_id": "{{ order_id }}",
+    "handler": function (response) {
+        // Set the payment ID in the hidden form
+        document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+        // Submit the form
+        document.getElementById('paymentForm').submit();
+    },
+    "prefill": {
+        "name": "{{ student.name }}",
+        "email": "{{ student.email }}",
+        "contact": "{{ student.contact_number }}"
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+
+// Initialize Razorpay
+const rzp = new Razorpay(options);
+
+// Add click event listener to the payment button
+document.getElementById('rzp-button').onclick = function(e) {
+    rzp.open();
+    e.preventDefault();
+};
+</script>
 
 {% endblock content %}

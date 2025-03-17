@@ -2,7 +2,7 @@
 {% block content %}
 {% load static %}
 
-<div class="container-fluid  dashboard-content">
+<div class="container-fluid dashboard-content">
     <div class="row">
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="page-header">
@@ -19,9 +19,6 @@
         </div>
     </div>
     <div class="row">
-        <!-- ============================================================== -->
-        <!-- basic form -->
-        <!-- ============================================================== -->
         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 m-auto">
             {% if messages %}
                 {% for message in messages %}
@@ -31,91 +28,144 @@
             <div class="card">
                 <h5 class="card-header">Salary Transaction</h5>
                 <div class="card-body">
-                    <form action="{% url 'salary_transaction' %}" method="post" enctype="multipart/form-data" id="myform">
+                    <form id="salary-form" method="post">
                         {% csrf_token %}
+                        <input type="hidden" name="staff_id" value="{{ staff.sr_id }}">
+                        <input type="hidden" name="academic_year_id" value="{{ ay.ay_id }}">
+                        
+                        <!-- Staff Details Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="staff-info p-3 border rounded">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ staff.image }}" class="rounded-circle mr-3" style="width: 80px; height: 80px;">
+                                        <div>
+                                            <h5 class="mb-1">{{ staff.name }}</h5>
+                                            <p class="mb-1">{{ staff.designation.designation_name }}</p>
+                                            <small>{{ staff.login.username }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Salary Date -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Salary Date</label>
+                                    <input type="date" name="salary_date" value="{{ dt }}" class="form-control" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Salary Components -->
                         <div class="row">
-                            <div class="col-6">
-                                <div class="row border rounded py-3 bg-light">
-                                    <div class="col-3">
-                                        <img src="{{ data.image }}" class="rounded circle img-fluid" width="100" height="100" alt="">
-                                    </div>
-                                    <div class="col-3">
-                                        <h5>{{ data.name }}</h5>
-                                        <h5>{{ data.designation.designation_name }}</h5>
-                                    </div>
-                                    <div class="col-6">
-                                        
-                                        <h5>Contact : {{ data.contact_number }}</h5>
-                                        <h5>Email id : {{ data.login.username }}</h5>
-                                        <input type="hidden" name="staff_id" value="{{ data.sr_id }}">
-                                        <input type="hidden" name="salary_table_id" value="{{ st.st_id }}">
+                            <!-- Basic Pay -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Basic Pay</label>
+                                    <input type="number" class="form-control salary-component" name="basic_pay" 
+                                           value="{{ salary_table.basic_pay }}" readonly>
+                                </div>
+                            </div>
+
+                            <!-- DA -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>DA ({{ salary_table.da }}%)</label>
+                                    <input type="number" class="form-control salary-component" name="da_amount" 
+                                           value="{{ da_amount }}" readonly>
+                                </div>
+                            </div>
+
+                            <!-- HRA -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>HRA ({{ salary_table.hra }}%)</label>
+                                    <input type="number" class="form-control salary-component" name="hra_amount" 
+                                           value="{{ hra_amount }}" readonly>
+                                </div>
+                            </div>
+
+                            <!-- TA -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>TA ({{ salary_table.ta }}%)</label>
+                                    <input type="number" class="form-control salary-component" name="ta_amount" 
+                                           value="{{ ta_amount }}" readonly>
+                                </div>
+                            </div>
+
+                            <!-- AGP -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>AGP ({{ salary_table.agp }}%)</label>
+                                    <input type="number" class="form-control salary-component" name="agp_amount" 
+                                           value="{{ agp_amount }}" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Bonus -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Bonus</label>
+                                    <input type="number" class="form-control salary-component" name="bonus" 
+                                           value="0" min="0" step="0.01">
+                                </div>
+                            </div>
+
+                            <!-- Deductions -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Deductions</label>
+                                    <input type="number" class="form-control" name="deductions" 
+                                           value="0" min="0" step="0.01">
+                                </div>
+                            </div>
+
+                            <!-- Total Salary -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Total Salary</label>
+                                    <input type="text" class="form-control" id="total_salary" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add this section after the salary components -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Payment Summary</h5>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <p><strong>Total Earnings:</strong> <span id="total_earnings">0.00</span></p>
+                                                <ul class="list-unstyled">
+                                                    <li>Basic Pay: ₹<span id="basic_pay_text">{{ salary_table.basic_pay }}</span></li>
+                                                    <li>DA: ₹<span id="da_text">{{ da_amount }}</span></li>
+                                                    <li>HRA: ₹<span id="hra_text">{{ hra_amount }}</span></li>
+                                                    <li>TA: ₹<span id="ta_text">{{ ta_amount }}</span></li>
+                                                    <li>AGP: ₹<span id="agp_text">{{ agp_amount }}</span></li>
+                                                    <li>Bonus: ₹<span id="bonus_text">0.00</span></li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p><strong>Deductions:</strong> ₹<span id="deductions_text">0.00</span></p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p><strong>Net Payable:</strong> ₹<span id="net_payable">0.00</span></p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="row">
-                                    <div class="form-group col-6">
-                                        <label for="">Salary date</label>
-                                        <input type="date" min="{{chdate}}-01" value="{{chdate}}-01" name="salary_date" class="form-control" id="salary_date" required>
-                                    </div>
-                                    <div class="form-group col-6">
-                                        <label for="">Basic pay</label>
-                                        <input type="text" readonly value="{{ st.basic_pay }}" name="basic_pay" class="form-control" id="name" required>
-                                    </div>
-                                    <div class="form-group col-6">
-                                        <label for="">Bonus</label>
-                                        <input type="text" name="bonus" class="form-control" id="bonus">
-                                    </div>
-                                    <div class="form-group col-6">
-                                        <label for="">DA</label>
-                                        <input type="text" name="da" value="{{ st.da_amount }}" readonly class="form-control" id="da">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group col-3">
-                                <label for="">HRA</label>
-                                <input type="text" name="hra" value="{{ st.hra_amount }}" readonly class="form-control" id="hra">
-                            </div>
-                            <div class="form-group col-3">
-                                <label for="">TA</label>
-                                <input type="text" name="ta" value="{{ st.ta_amount }}" readonly class="form-control" id="ta">
-                            </div>
-                            <div class="form-group col-3">
-                                <label for="">AGP</label>
-                                <input type="text" name="agp" value="{{ st.agp_amount }}" readonly class="form-control" id="agp">
-                            </div>
-                            <div class="form-group col-3">
-                                <label for="">Leave deduction</label>
-                                <input type="text" readonly name="deductions" value="{{ dd }}" class="form-control" id="deduction" required>
-                            </div>
-                            <div class="form-group col-12">
-                                
-                                {% if le %}
-                                <table class="table table-bordered">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Leave type</th>
-                                        <th>Number of leaves</th>
-                                        <th>Allowed days</th>
-                                        <th>Excess days</th>
-                                    </tr>
-                                    {% for i in le %}
-                                    <tr>
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ i.leave_type__leave_type }}</td>
-                                        <td>{{ i.total_days }}</td>
-                                        <td>{{ i.allowed_days }}</td>
-                                        <td>{{ i.excess_days }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </table>
-                                
-                                {% endif %}
-                                    
-                            </div>
-                            <div class="form-group col-12">
-                                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
-                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="button" class="btn btn-primary process-payment">Process Salary Payment</button>
+                            <small class="form-text text-muted">
+                                Note: This will create a salary transaction that needs to be approved by the administrator.
+                            </small>
                         </div>
                     </form>
                 </div>
@@ -124,90 +174,93 @@
     </div>
 </div>
 
-
 <script src="{% static 'Validation/jquery-1.11.1.min.js' %}"></script>
-<script src="{% static 'Validation/jquery_validate.js' %}"></script>
-<script src="{% static 'Validation/additional_validate.js' %}"></script>
-
 <script>
-    $(function(){
-        // Get the value of the date input field
-        var vl = $('#salary_date').val();
-
-        // If there is a value in the input field, use that date
-        if (vl) {
-            var dtToday = new Date(vl);  // Convert to a date object
-        } else {
-            var dtToday = new Date();  // Fallback to today's date if no value
+$(document).ready(function() {
+    // Add CSRF token to all AJAX requests
+    $.ajaxSetup({
+        headers: {
+            'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
         }
-
-        var year = dtToday.getFullYear();
-        var month = dtToday.getMonth() + 1;  // Get the current month (0-indexed, so add 1)
-        
-        // Get the first day of the next month, then subtract 1 day to get the last day of the current month
-        var nextMonth = new Date(year, month, 1);  // First day of next month
-        var lastDayOfMonth = new Date(nextMonth - 1);  // Last day of the current month
-        
-        var day = lastDayOfMonth.getDate();  // Get the last day number
-        
-        // Ensure two digits for month and day
-        if (month < 10) month = '0' + month;
-        if (day < 10) day = '0' + day;
-        
-        // Format maxDate as YYYY-MM-DD
-        var maxDate = year + '-' + month + '-' + day;
-
-        // Set the max attribute of the input field
-        $('#salary_date').attr('max', maxDate);
-        $('#salary_date').val(maxDate);
     });
+
+    // Function to calculate total salary
+    function calculateTotal() {
+        var total = 0;
+        $('.salary-component').each(function() {
+            total += parseFloat($(this).val()) || 0;
+        });
+        
+        // Subtract deductions
+        var deductions = parseFloat($('input[name="deductions"]').val()) || 0;
+        total -= deductions;
+        
+        $('#total_salary').val(total.toFixed(2));
+        return total;
+    }
+
+    // Calculate initial total
+    calculateTotal();
+
+    // Recalculate when bonus or deductions change
+    $('input[name="bonus"], input[name="deductions"]').on('input', calculateTotal);
+
+    // Process payment button click handler
+    $('.process-payment').on('click', function(e) {
+        e.preventDefault();
+        
+        // Validate total salary
+        var totalSalary = calculateTotal();
+        if (totalSalary <= 0) {
+            alert('Total salary must be greater than 0');
+            return;
+        }
+        
+        // Show confirmation dialog
+        if (!confirm('Are you sure you want to process this salary payment?')) {
+            return;
+        }
+        
+        // Get the form data
+        var formData = new FormData($('#salary-form')[0]);
+        
+        // Disable button and show loading state
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+        
+        // Send AJAX request
+        $.ajax({
+            url: "{% url 'salary_transaction' %}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Salary processed successfully!');
+                    window.location.href = "{% url 'staff_salary' %}";
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                var errorMessage = 'An error occurred';
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    errorMessage = response.message || errorMessage;
+                } catch(e) {
+                    console.error('Error parsing response:', e);
+                }
+                alert('Error: ' + errorMessage);
+            },
+            complete: function() {
+                // Re-enable the button
+                $btn.prop('disabled', false).text('Process Salary Payment');
+            }
+        });
+    });
+});
 </script>
-
-
-<script>
-    (function ($, W, D)
-    {
-    var JQUERY4U = {};
-    JQUERY4U.UTIL =
-    {
-    setupFormValidation: function ()
-    {
-    $.validator.addMethod(
-    "regex",
-    function(value, element, regexp) {
-    var check = false;
-    return this.optional(element) || regexp.test(value);
-    },
-    "Not a valid Input."
-    );
-    
-    //form validation rules
-    $("#myform").validate({
-    ignore: [],
-    rules: {
-                
-            bonus: {
-                regex : /^[1-9]\d*$/,
-                    },
-                   
-              },
-              messages: {
-    
-                bonus: "Please Enter Valid number",
-                
-    },
-    submitHandler: function (form) {
-    form.submit();
-    }
-    });
-    }
-    }
-    //when the dom has loaded setup form validation rules
-    $(D).ready(function ($) {
-    JQUERY4U.UTIL.setupFormValidation();
-    });
-    })(jQuery, window, document);
-    </script>
 
 {% endblock content %}
 

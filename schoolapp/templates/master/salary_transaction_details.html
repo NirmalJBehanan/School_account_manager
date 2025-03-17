@@ -1,0 +1,182 @@
+{% extends 'master/header.html' %}
+{% block content %}
+<div class="container-fluid dashboard-content">
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="page-header">
+                <h3 class="mb-2">{{ title }}</h3>
+                <div class="page-breadcrumb">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="breadcrumb-link">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'new_salary_transactions' %}" class="breadcrumb-link">Salary Transactions</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Transaction Details</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% else %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Salary Details Card -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+                <h5 class="card-header">Staff Information</h5>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="150">Name</th>
+                                    <td>{{ transaction.staff.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Designation</th>
+                                    <td>{{ transaction.staff.designation.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Academic Year</th>
+                                    <td>{{ transaction.academic_year.academic_year }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date</th>
+                                    <td>{{ transaction.salary_date }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>
+                                        <span class="badge {% if transaction.approval_status == 'Pending' %}badge-warning{% elif transaction.approval_status == 'Approved' %}badge-success{% else %}badge-danger{% endif %}">
+                                            {{ transaction.approval_status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <h5 class="card-header">Salary Breakdown</h5>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th width="200">Basic Pay</th>
+                                    <td class="text-right">₹{{ transaction.basic_pay }}</td>
+                                </tr>
+                                <tr>
+                                    <th>DA Amount</th>
+                                    <td class="text-right">₹{{ transaction.da_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>HRA Amount</th>
+                                    <td class="text-right">₹{{ transaction.hra_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>TA Amount</th>
+                                    <td class="text-right">₹{{ transaction.ta_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>AGP Amount</th>
+                                    <td class="text-right">₹{{ transaction.agp_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Bonus</th>
+                                    <td class="text-right">₹{{ transaction.bonus }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Deductions</th>
+                                    <td class="text-right text-danger">- ₹{{ transaction.deductions }}</td>
+                                </tr>
+                                <tr class="table-info">
+                                    <th>Total Salary</th>
+                                    <td class="text-right">₹{{ transaction.total_salary }}</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <th>Net Payable</th>
+                                    <td class="text-right"><strong>₹{{ transaction.payable }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 mb-4">
+                <a href="{% url 'new_salary_transactions' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+                
+                {% if transaction.approval_status == 'Pending' %}
+                    <button class="btn btn-success approve-salary" 
+                            data-transaction-id="{{ transaction.st_id }}"
+                            onclick="return confirmAction('approve');">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="btn btn-danger deny-salary"
+                            data-transaction-id="{{ transaction.st_id }}"
+                            onclick="return confirmAction('deny');">
+                        <i class="fas fa-times"></i> Deny
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Status Badge -->
+            <div class="status-badge">
+                {% if transaction.approval_status == 'Approved' %}
+                    <span class="badge badge-success">Approved</span>
+                {% elif transaction.approval_status == 'Denied' %}
+                    <span class="badge badge-danger">Denied</span>
+                {% else %}
+                    <span class="badge badge-warning">Pending</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add JavaScript for better error handling -->
+    <script>
+    function confirmAction(action) {
+        var message = action === 'approve' 
+            ? 'Are you sure you want to approve this salary?' 
+            : 'Are you sure you want to deny this salary?';
+            
+        if (!confirm(message)) {
+            return false;
+        }
+        
+        try {
+            var transactionId = document.querySelector(
+                action === 'approve' ? '.approve-salary' : '.deny-salary'
+            ).dataset.transactionId;
+            
+            window.location.href = `{% url 'salary_transactions_status' %}?sft_id=${transactionId}&status=${action === 'approve' ? '1' : '0'}`;
+        } catch (e) {
+            console.error('Error:', e);
+            alert('An error occurred. Please try again.');
+            return false;
+        }
+    }
+    </script>
+</div>
+{% endblock %} 

@@ -34,6 +34,8 @@
                                 <th>#</th>
                                 <th>Account category</th>
                                 <th>Finance type</th>
+                                <th>Amount</th>
+                                <th>Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -42,9 +44,25 @@
                                 <td>{{forloop.counter}}</td>
                                 <td>{{i.account_category}}</td>
                                 <td>{{i.finance_type}}</td>
+                                <td>{{i.amount|default:"0.00"}}</td>
+                                <td>{{i.transaction_date|date:"Y-m-d"}}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3"><strong>Total Income:</strong></td>
+                                <td colspan="2">{{total_income|default:"0.00"}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"><strong>Total Expense:</strong></td>
+                                <td colspan="2">{{total_expense|default:"0.00"}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"><strong>Net Balance:</strong></td>
+                                <td colspan="2">{{net_balance|default:"0.00"}}</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>

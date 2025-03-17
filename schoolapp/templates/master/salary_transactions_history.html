@@ -92,19 +92,29 @@
                                     Contact number : {{i.staff.contact_number}}
                                 </td>
                                 <td>{{ i.academic_year.academic_year }}</td>
-                                <td>{{i.total_salary}}</td>
-                                <td>{{ i.salary_date }} </td>
+                                <td>₹{{ i.total_salary|floatformat:2 }}</td>
+                                <td>{{ i.salary_date|date:"d M Y" }}</td>
                                 <td>
                                     {% if i.approval_status == None %}
                                         <div class="badge badge-warning">Pending</div>
                                     {% elif i.approval_status == 'Approved' %}
                                         <div class="badge badge-success">{{i.approval_status}}</div>
+                                        {% if i.payment_status %}
+                                            <br><small class="text-success">Paid on {{ i.payment_date|date:"d M Y" }}</small>
+                                        {% endif %}
                                     {% else %}
                                         <div class="badge badge-danger">{{i.approval_status}}</div>
                                     {% endif %} 
                                 </td>
                                 <td>
-                                    <a href="{% url 'salary_details' %}?st_id={{ i.st_id }}" class="btn btn-xs btn-primary">Salary details</a>
+                                    <a href="{% url 'salary_details' %}?st_id={{ i.st_id }}" class="btn btn-xs btn-primary">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </a>
+                                    {% if i.approval_status == 'Approved' and not i.payment_status %}
+                                        <a href="{% url 'process_salary_payment' %}?st_id={{ i.st_id }}" class="btn btn-xs btn-success">
+                                            <i class="fas fa-money-bill"></i> Process Payment
+                                        </a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

@@ -1,55 +1,269 @@
 {% extends 'student/header.html' %}
 {% load static %}
+{% load custom_filters %}
+
+{% block extra_head %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control {
+    height: calc(2.25rem + 2px);
+}
+.badge {
+    padding: 0.5em 1em;
+    font-size: 0.875rem;
+}
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+.table-warning {
+    background-color: #fff3cd !important;
+}
+.text-right {
+    text-align: right !important;
+}
+/* Style for close button */
+.alert .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1rem;
+    color: inherit;
+    opacity: .7;
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.alert .close:hover {
+    opacity: 1;
+}
+
+/* Ensure alert has relative positioning for close button */
+.alert {
+    position: relative;
+    padding-right: 3rem;
+}
+.table td, .table th {
+    vertical-align: middle;
+}
+.form-inline .form-control-sm {
+    width: 200px;
+}
+.card-header {
+    padding: 1rem;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-
 
 <header id="header" class="ex-header">
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <h1 class="white">Contact Us</h1>
-            </div> 
-        </div> 
-    </div> 
+                <h1 class="white">Fee List</h1>
+            </div>
+        </div>
+    </div>
 </header>
- 
-<!-- Description -->
-<div id="description" class="basic-2">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <h2>Fees</h2>
-            </div> <!-- end of col -->
-        </div> <!-- end of row -->
-        <div class="row">
-            <div class="col-lg-12">
-                <ul class="list-unstyled li-space-lg first">
-                    <div class="row">
-                        {% for i in data %}
-                        <div class="col-6">
-                            <div class="card px-5 py-4 rounded">
-                                <li class="media">
-                                    <i class="bullet">{{ forloop.counter }}</i>
-                                    <div class="media-body">
-                                        <h4>{{ i.fee_type }}</h4>
-                                        <p>₹ {{ i.amount }}</p>
-                                        <span>
-                                            <a href="{% url 'student_fee' %}?sf_id={{ i.sf_id }}" class="btn btn-sm btn-warning mt-2">Fee payment</a>
-                                        </span>
-                                    </div>
-                                </li>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </ul>
-            </div> <!-- end of col -->
-            
-        </div> <!-- end of row -->
-    </div> <!-- end of container -->
-</div> <!-- end of basic-2 -->
-<!-- end of descri
 
+<div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Fee Details - {{ academic_year.academic_year }}</h5>
+            <div class="form-inline">
+                <label class="text-white mr-2">Filter by Term:</label>
+                <select id="termFilter" class="form-control form-control-sm">
+                    <option value="all">All Terms</option>
+                    <option value="1" {% if current_term == '1' %}selected{% endif %}>First Term (June-August)</option>
+                    <option value="2" {% if current_term == '2' %}selected{% endif %}>Second Term (September-November)</option>
+                    <option value="3" {% if current_term == '3' %}selected{% endif %}>Third Term (December-March)</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Fee Type</th>
+                            <th>Term</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in fee_data %}
+                            <tr class="fee-row" data-term="{{ item.term }}" {% if not item.paid and item.is_overdue %}class="table-warning"{% endif %}>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.fee_type }}</td>
+                                <td>{{ item.term_name }}</td>
+                                <td class="text-right">
+                                    <strong>Base Fee: ₹{{ item.amount }}</strong>
+                                    {% if not item.paid and item.is_overdue %}
+                                        <br>
+                                        <small class="text-danger">
+                                            Late Fee: ₹{{ item.late_fee }}<br>
+                                            ({{ item.days_late }} days × ₹10/day)<br>
+                                            <strong>Total Due: ₹{{ item.total_with_fine }}</strong>
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ item.due_date }}
+                                    {% if not item.paid and item.is_overdue %}
+                                        <br>
+                                        <small class="text-danger">
+                                            <i class="fas fa-exclamation-circle"></i> 
+                                            Overdue by {{ item.days_late }} days
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.paid %}
+                                        <span class="badge bg-success">Paid</span>
+                                        {% if item.paid_late %}
+                                            <br>
+                                            <small class="text-warning">
+                                                Paid with late fee: ₹{{ item.late_fee_paid }}
+                                            </small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.paid %}
+                                        <a href="{% url 'fee_receipt' transaction_id=item.transaction_id %}" 
+                                           class="btn btn-info btn-sm">
+                                            <i class="fas fa-file-pdf"></i> Download Receipt
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'payment' %}?sf_id={{ item.sf_id }}&ye={{ current_date.year }}&mo={{ current_date.month }}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-credit-card"></i> 
+                                            {% if item.is_overdue %}
+                                                Pay ₹{{ item.total_with_fine }}
+                                            {% else %}
+                                                Pay ₹{{ item.amount }}
+                                            {% endif %}
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-info">
+                            <td colspan="3"><strong><span id="totalLabel">Selected Term Total</span></strong></td>
+                            <td class="text-right">
+                                <strong>Base Fees: ₹<span id="termBaseFees">{{ total_fees }}</span></strong>
+                                <div id="lateFeeSection" {% if total_late_fees == 0 %}style="display: none;"{% endif %}>
+                                    <small class="text-danger">Late Fees: ₹<span id="termLateFees">{{ total_late_fees }}</span></small><br>
+                                    <strong>Total with Penalties: ₹<span id="termTotalDue">{{ total_with_penalties }}</span></strong>
+                                </div>
+                            </td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Replace your existing script with this at the bottom -->
+{% block extra_js %}
+<script>
+// Execute immediately when script loads
+(function() {
+    // Hide all rows except current term initially
+    var currentTerm = '{{ current_term }}';  // Get from Django context
+    var allRows = document.querySelectorAll('.fee-row');
+    allRows.forEach(function(row) {
+        if (row.getAttribute('data-term') !== currentTerm) {
+            row.style.display = 'none';
+        }
+    });
+})();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const termFilter = document.getElementById('termFilter');
+    const feeRows = document.querySelectorAll('.fee-row');
+    
+    function updateTotals(selectedTerm) {
+        let baseFees = 0;
+        let lateFees = 0;
+        let visibleCount = 0;
+        
+        feeRows.forEach((row, index) => {
+            const term = row.getAttribute('data-term');
+            if (selectedTerm === 'all' || term === selectedTerm) {
+                row.style.display = '';
+                visibleCount++;
+                row.querySelector('td:first-child').textContent = visibleCount;
+                
+                // Calculate totals
+                const baseAmount = parseFloat(row.querySelector('strong').textContent.replace('Base Fee: ₹', ''));
+                baseFees += baseAmount;
+                
+                const lateFeeElement = row.querySelector('small.text-danger strong');
+                if (lateFeeElement) {
+                    const totalDue = parseFloat(lateFeeElement.textContent.replace('Total Due: ₹', ''));
+                    lateFees += (totalDue - baseAmount);
+                }
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update totals
+        document.getElementById('termBaseFees').textContent = baseFees.toFixed(2);
+        document.getElementById('termLateFees').textContent = lateFees.toFixed(2);
+        document.getElementById('termTotalDue').textContent = (baseFees + lateFees).toFixed(2);
+        
+        // Show/hide late fees section
+        const lateFeeSection = document.getElementById('lateFeeSection');
+        lateFeeSection.style.display = lateFees > 0 ? 'block' : 'none';
+        
+        // Update total label
+        document.getElementById('totalLabel').textContent = 
+            selectedTerm === 'all' ? 'Total for All Terms' : 'Selected Term Total';
+    }
+    
+    // Initial filter based on current term
+    updateTotals(termFilter.value);
+    
+    // Add event listener for filter changes
+    termFilter.addEventListener('change', function() {
+        updateTotals(this.value);
+    });
+});
+
+// Simple close notification function
+function closeNotification() {
+    const notification = document.getElementById('feeNotification');
+    if (notification) {
+        notification.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
 
 {% endblock content %}

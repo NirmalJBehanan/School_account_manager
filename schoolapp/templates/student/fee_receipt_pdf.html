@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Paid Students</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h3 {
+            text-align: center;
+        }
+
+        .amount {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .total-row {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .student-info td {
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+    <h3>NIRMAL PUBLIC SCHOOL</h3>
+    <h5>Fee Receipt</h5>
+    
+    <table style="margin-bottom: 20px;" class="student-info">
+        <tr>
+            <td><strong>Receipt No:</strong> {{ receipt_no }}</td>
+            <td><strong>Date:</strong> {{ payment_date|date:"d-m-Y" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Student Name:</strong> {{ student_name }}</td>
+            <td><strong>Academic Year:</strong> {{ academic_year }}</td>
+        </tr>
+        <tr>
+            <td><strong>Standard:</strong> {{ student.standard.standard }}</td>
+            <td><strong>Education Level:</strong> {{ student.standard.educational_level.level }}</td>
+        </tr>
+    </table>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30px;">ID</th>
+                <th>Description</th>
+                <th>Month</th>
+                <th style="width: 100px;">Amount (INR)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>{{ fee_type }}</td>
+                <td>{{ payment_date|date:"F Y" }}</td>
+                <td class="amount">{{ amount|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <th colspan="3">Total Amount</th>
+                <th class="amount">{{ amount|floatformat:2 }}</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <p style="text-align: right; margin-top: 30px; font-size: 9px;">
+        This is a computer-generated receipt. No signature is required.<br>
+        Generated on: {{ payment_date|date:"d-m-Y" }}
+    </p>
+</body>
+</html> 

@@ -70,6 +70,11 @@
                                 <a class="nav-link" href="{% url 'home' %}"><i class="fa fa-fw fa-user-circle"></i>Dashboard</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="{% url 'blockchain_view' %}">
+                                    <i class="fas fa-link"></i>Student Registration Blockchain
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-1" aria-controls="submenu-1"><i class="fas fa-align-justify"></i>Add/Manage</a>
                                 <div id="submenu-1" class="collapse submenu">
                                     <ul class="nav flex-column">
@@ -95,6 +100,11 @@
                                         <li class="nav-item">
                                             <a class="nav-link" href="{% url 'staff_list' %}">Staff list</a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'staff_attendance' %}">Mark Attendance</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="{% url 'view_staff_attendance' %}">View Attendance</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -152,11 +162,14 @@
                                             <a class="nav-link" href="{% url 'school_finance_transactions_history' %}">School Finance Transaction</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="{% url 'student_fee_transactions' %}">Student Fee Transaction</a>
+                                            <a href="{% url 'student_fee_transactions' %}" class="nav-link">Student Fee Transactions</a>
                                         </li>
                                     </ul>
                                 </div>
                             </li> 
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'student_list' %}"><i class="fa fa-fw fa-users"></i>Student List</a>
+                            </li>
                            <li class="nav-item">
                                 <a class="nav-link" href="{% url 'student_fee_dues' %}"><i class="fas fa-comment-alt"></i>Student Fee Dues</a>
                             </li>
